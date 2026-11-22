@@ -1,347 +1,832 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>FutureTP Copilot v5.1 Multi-Cuenta</title>
-  <style>
-    :root {
-      --bg-main: #090d14;
-      --bg-card: #101622;
-      --bg-elevated: #161f30;
-      --border: #1f2b40;
-      --text-main: #e6edf7;
-      --text-muted: #8494ad;
-      --green: #10b981;
-      --green-bg: rgba(16, 185, 129, 0.14);
-      --red: #ef4444;
-      --red-bg: rgba(239, 68, 68, 0.14);
-      --amber: #f59e0b;
-      --amber-bg: rgba(245, 158, 11, 0.14);
-      --blue: #3b82f6;
-      --blue-bg: rgba(59, 130, 246, 0.14);
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    body { background: var(--bg-main); color: var(--text-main); padding-bottom: 74px; }
-    header {
-      background: var(--bg-card); border-bottom: 1px solid var(--border);
-      padding: 10px 14px; display: flex; flex-wrap: wrap; gap: 8px;
-      align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 20;
-    }
-    .brand { display: flex; align-items: center; gap: 10px; }
-    .logo {
-      width: 34px; height: 34px; border-radius: 9px; background: var(--green-bg);
-      border: 1px solid var(--green); display: flex; align-items: center; justify-content: center;
-      color: var(--green); font-weight: 800; font-size: 13px;
-    }
-    .brand h1 { font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-    .badge { font-size: 11px; padding: 2px 7px; border-radius: 6px; background: var(--green-bg); color: var(--green); border: 1px solid rgba(16,185,129,0.3); }
-    .badge.short { background: var(--red-bg); color: var(--red); border-color: rgba(239,68,68,0.3); }
-    .badge.warn { background: var(--amber-bg); color: var(--amber); border-color: rgba(245,158,11,0.3); }
-    .badge.blue { background: var(--blue-bg); color: #60a5fa; border-color: rgba(59,130,246,0.35); }
-    .sub-status { font-size: 11px; color: var(--text-muted); display: flex; align-items: center; gap: 6px; margin-top: 2px; flex-wrap: wrap; }
-    .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); display: inline-block; }
-    .dot.warn { background: var(--amber); }
-    .controls-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
-    select, input, button {
-      background: var(--bg-elevated); color: var(--text-main); border: 1px solid var(--border);
-      border-radius: 8px; padding: 7px 10px; font-size: 12px; font-weight: 600;
-    }
-    button { cursor: pointer; }
-    button:disabled { opacity: 0.45; cursor: not-allowed; }
-    button.active { background: var(--green-bg); border-color: var(--green); color: var(--green); }
-    button.primary { background: var(--green); color: #051b11; border: none; }
-    button.danger { background: var(--red-bg); border-color: var(--red); color: var(--red); }
-    button.secondary { background: var(--blue-bg); border-color: var(--blue); color: #60a5fa; }
-    .account-bar {
-      background: #0c121d; border-bottom: 1px solid var(--border); padding: 8px 14px;
-      display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between;
-    }
-    .account-pills { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
-    .acc-pill {
-      padding: 6px 10px; border-radius: 8px; font-size: 12px; background: var(--bg-elevated);
-      border: 1px solid var(--border); color: var(--text-muted); display: flex; align-items: center; gap: 6px;
-    }
-    .acc-pill.selected {
-      background: var(--blue-bg); border-color: var(--blue); color: var(--text-main);
-    }
-    .container { max-width: 1320px; margin: 0 auto; padding: 12px; display: grid; grid-template-columns: 1fr 390px; gap: 12px; }
-    @media (max-width: 900px) {
-      .container { grid-template-columns: 1fr; }
-      .tab-section { display: none; }
-      .tab-section.active-tab { display: block; }
-    }
-    .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 12px; margin-bottom: 12px; }
-    .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; gap: 8px; flex-wrap: wrap; }
-    .card-title { font-size: 12px; font-weight: 700; letter-spacing: 0.4px; color: var(--text-muted); text-transform: uppercase; }
-    .price-hero { display: flex; align-items: baseline; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
-    .price-big { font-size: 24px; font-weight: 800; font-variant-numeric: tabular-nums; }
-    .price-change { font-size: 12px; font-weight: 700; padding: 2px 7px; border-radius: 6px; }
-    canvas { width: 100%; display: block; background: #070b11; border-radius: 8px; border: 1px solid var(--border); }
-    #chartCanvas { height: 315px; }
-    .layers { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
-    .layer-pill { font-size: 11px; padding: 5px 8px; border-radius: 6px; background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-muted); }
-    .layer-pill.on { border-color: var(--blue); color: var(--text-main); background: var(--blue-bg); }
-    .check-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; border-radius: 8px; background: var(--bg-elevated); margin-bottom: 6px; font-size: 12px; gap: 8px; }
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
-    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-bottom: 8px; }
-    .stat-box { background: var(--bg-elevated); padding: 9px; border-radius: 8px; border: 1px solid var(--border); }
-    .stat-label { font-size: 11px; color: var(--text-muted); }
-    .stat-val { font-size: 14px; font-weight: 700; margin-top: 2px; font-variant-numeric: tabular-nums; }
-    .setup-card {
-      background: linear-gradient(180deg, rgba(22,31,48,0.95) 0%, rgba(16,22,34,1) 100%);
-      border: 1px solid var(--blue);
-    }
-    .copy-mini { font-size: 10px; padding: 2px 6px; margin-top: 4px; width: 100%; background: var(--bg-card); color: var(--text-muted); }
-    .lev-box { background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 9px; padding: 10px; margin-bottom: 10px; }
-    .lev-top { display: flex; justify-content: space-between; align-items: center; font-size: 12px; margin-bottom: 6px; }
-    input[type="range"] { width: 100%; padding: 0; accent-color: var(--green); }
-    .progress-wrap { margin-bottom: 10px; }
-    .progress-top { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 4px; }
-    .bar { height: 7px; background: var(--bg-elevated); border-radius: 99px; overflow: hidden; }
-    .bar-fill { height: 100%; background: var(--green); transition: width 0.25s; }
-    .bar-fill.red { background: var(--red); }
-    .open-pos-card {
-      background: var(--blue-bg); border: 1px solid var(--blue); border-radius: 9px;
-      padding: 9px 10px; margin-bottom: 8px;
-    }
-    .journal-item {
-      background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 9px;
-      padding: 9px 10px; margin-bottom: 7px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; gap: 8px;
-    }
-    .del-trade-btn { background: transparent; border: none; color: var(--text-muted); font-size: 13px; padding: 2px 5px; }
-    .del-trade-btn:hover { color: var(--red); }
-    .manual-row { display: grid; grid-template-columns: 1fr 1fr auto; gap: 6px; margin-top: 8px; }
-    .lock-banner {
-      display: none; background: var(--red-bg); border: 1px solid var(--red); color: var(--text-main);
-      border-radius: 9px; padding: 9px 10px; margin-bottom: 10px; font-size: 12px;
-    }
-    .modal-backdrop {
-      display: none; position: fixed; inset: 0; background: rgba(4, 7, 13, 0.8); z-index: 50;
-      align-items: center; justify-content: center; padding: 16px;
-    }
-    .modal-backdrop.open { display: flex; }
-    .modal-box {
-      background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px;
-      width: 100%; max-width: 420px; padding: 16px;
-    }
-    .form-group { margin-bottom: 10px; }
-    .form-group label { display: block; font-size: 11px; color: var(--text-muted); margin-bottom: 4px; }
-    .form-group input, .form-group select { width: 100%; }
-    .bottom-nav {
-      display: none; position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg-card);
-      border-top: 1px solid var(--border); z-index: 30; padding: 6px;
-    }
-    @media (max-width: 900px) { .bottom-nav { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; } }
-    .nav-btn { background: transparent; border: none; color: var(--text-muted); padding: 9px; font-size: 12px; border-radius: 8px; }
-    .nav-btn.active { background: var(--green-bg); color: var(--green); }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>FutureTP Copilot v5.2 Multi-Cuenta</title>
+<style>
+:root{--bg-main:#090d14;--bg-card:#101622;--bg-elevated:#161f30;--border:#1f2b40;--text-main:#e6edf7;--text-muted:#8494ad;--green:#10b981;--green-bg:rgba(16,185,129,0.14);--red:#ef4444;--red-bg:rgba(239,68,68,0.14);--amber:#f59e0b;--amber-bg:rgba(245,158,11,0.14);--blue:#3b82f6;--blue-bg:rgba(59,130,246,0.14);}
+*{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;}
+body{background:var(--bg-main);color:var(--text-main);padding-bottom:74px;}
+header{background:var(--bg-card);border-bottom:1px solid var(--border);padding:10px 14px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:20;}
+.brand{display:flex;align-items:center;gap:10px;}
+.logo{width:34px;height:34px;border-radius:9px;background:var(--green-bg);border:1px solid var(--green);display:flex;align-items:center;justify-content:center;color:var(--green);font-weight:800;font-size:13px;}
+.brand h1{font-size:15px;font-weight:700;display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.badge{font-size:11px;padding:2px 7px;border-radius:6px;background:var(--green-bg);color:var(--green);border:1px solid rgba(16,185,129,0.3);}
+.badge.short{background:var(--red-bg);color:var(--red);border-color:rgba(239,68,68,0.3);}
+.badge.warn{background:var(--amber-bg);color:var(--amber);border-color:rgba(245,158,11,0.3);}
+.badge.blue{background:var(--blue-bg);color:#60a5fa;border-color:rgba(59,130,246,0.35);}
+.sub-status{font-size:11px;color:var(--text-muted);display:flex;align-items:center;gap:6px;margin-top:2px;flex-wrap:wrap;}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--green);display:inline-block;}
+.dot.warn{background:var(--amber);}
+.controls-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center;}
+select,input,button{background:var(--bg-elevated);color:var(--text-main);border:1px solid var(--border);border-radius:8px;padding:7px 10px;font-size:12px;font-weight:600;}
+button{cursor:pointer;}
+button:disabled{opacity:0.45;cursor:not-allowed;}
+button.active{background:var(--green-bg);border-color:var(--green);color:var(--green);}
+button.primary{background:var(--green);color:#051b11;border:none;}
+button.danger{background:var(--red-bg);border-color:var(--red);color:var(--red);}
+button.secondary{background:var(--blue-bg);border-color:var(--blue);color:#60a5fa;}
+.account-bar{background:#0c121d;border-bottom:1px solid var(--border);padding:8px 14px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;}
+.account-pills{display:flex;flex-wrap:wrap;gap:6px;align-items:center;}
+.acc-pill{padding:6px 10px;border-radius:8px;font-size:12px;background:var(--bg-elevated);border:1px solid var(--border);color:var(--text-muted);display:flex;align-items:center;gap:6px;}
+.acc-pill.selected{background:var(--blue-bg);border-color:var(--blue);color:var(--text-main);}
+.container{max-width:1320px;margin:0 auto;padding:12px;display:grid;grid-template-columns:1fr 390px;gap:12px;}
+@media(max-width:900px){.container{grid-template-columns:1fr;}.tab-section{display:none;}.tab-section.active-tab{display:block;}}
+.card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:12px;}
+.card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:8px;flex-wrap:wrap;}
+.card-title{font-size:12px;font-weight:700;letter-spacing:0.4px;color:var(--text-muted);text-transform:uppercase;}
+.price-hero{display:flex;align-items:baseline;gap:10px;margin-bottom:8px;flex-wrap:wrap;}
+.price-big{font-size:24px;font-weight:800;font-variant-numeric:tabular-nums;}
+.price-change{font-size:12px;font-weight:700;padding:2px 7px;border-radius:6px;}
+canvas{width:100%;display:block;background:#070b11;border-radius:8px;border:1px solid var(--border);}
+#chartCanvas{height:315px;}
+.layers{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+.layer-pill{font-size:11px;padding:5px 8px;border-radius:6px;background:var(--bg-elevated);border:1px solid var(--border);color:var(--text-muted);}
+.layer-pill.on{border-color:var(--blue);color:var(--text-main);background:var(--blue-bg);}
+.check-item{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border-radius:8px;background:var(--bg-elevated);margin-bottom:6px;font-size:12px;gap:8px;}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px;}
+.stat-box{background:var(--bg-elevated);padding:9px;border-radius:8px;border:1px solid var(--border);}
+.stat-label{font-size:11px;color:var(--text-muted);}
+.stat-val{font-size:14px;font-weight:700;margin-top:2px;font-variant-numeric:tabular-nums;}
+.setup-card{background:linear-gradient(180deg,rgba(22,31,48,0.95) 0%,rgba(16,22,34,1) 100%);border:1px solid var(--blue);}
+.copy-mini{font-size:10px;padding:2px 6px;margin-top:4px;width:100%;background:var(--bg-card);color:var(--text-muted);}
+.lev-box{background:var(--bg-elevated);border:1px solid var(--border);border-radius:9px;padding:10px;margin-bottom:10px;}
+.lev-top{display:flex;justify-content:space-between;align-items:center;font-size:12px;margin-bottom:6px;}
+input[type="range"]{width:100%;padding:0;accent-color:var(--green);}
+.progress-wrap{margin-bottom:10px;}
+.progress-top{display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px;}
+.bar{height:7px;background:var(--bg-elevated);border-radius:99px;overflow:hidden;}
+.bar-fill{height:100%;background:var(--green);transition:width 0.25s;}
+.bar-fill.red{background:var(--red);}
+.open-pos-card{background:var(--blue-bg);border:1px solid var(--blue);border-radius:9px;padding:9px 10px;margin-bottom:8px;}
+.journal-item{background:var(--bg-elevated);border:1px solid var(--border);border-radius:9px;padding:9px 10px;margin-bottom:7px;display:flex;justify-content:space-between;align-items:center;font-size:12px;gap:8px;}
+.del-trade-btn{background:transparent;border:none;color:var(--text-muted);font-size:13px;padding:2px 5px;}
+.manual-row{display:grid;grid-template-columns:1fr 1fr auto;gap:6px;margin-top:8px;}
+.lock-banner{display:none;background:var(--red-bg);border:1px solid var(--red);color:var(--text-main);border-radius:9px;padding:9px 10px;margin-bottom:10px;font-size:12px;}
+.modal-backdrop{display:none;position:fixed;inset:0;background:rgba(4,7,13,0.8);z-index:50;align-items:center;justify-content:center;padding:16px;}
+.modal-backdrop.open{display:flex;}
+.modal-box{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;width:100%;max-width:420px;padding:16px;}
+.form-group{margin-bottom:10px;}
+.form-group label{display:block;font-size:11px;color:var(--text-muted);margin-bottom:4px;}
+.form-group input,.form-group select{width:100%;}
+.bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--bg-card);border-top:1px solid var(--border);z-index:30;padding:6px;}
+@media(max-width:900px){.bottom-nav{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;}}
+.nav-btn{background:transparent;border:none;color:var(--text-muted);padding:9px;font-size:12px;border-radius:8px;}
+.nav-btn.active{background:var(--green-bg);color:var(--green);}
+</style>
 </head>
 <body>
-  <header>
-    <div class="brand">
-      <div class="logo">FTP</div>
-      <div>
-        <h1>FutureTP Copilot <span class="badge blue">v5.1 Multi-Cuenta</span> <span class="badge" id="killzoneBadge">Sesión</span></h1>
-        <div class="sub-status">
-          <span class="dot" id="connDot"></span>
-          <span id="connText">Conectando mercado real...</span>
-          <button id="retryFeedBtn" style="padding:2px 6px;font-size:10px;">Reconectar</button>
-        </div>
+<header>
+  <div class="brand">
+    <div class="logo">FTP</div>
+    <div>
+      <h1>FutureTP Copilot <span class="badge blue">v5.2 Multi</span> <span class="badge" id="killzoneBadge">Sesión</span></h1>
+      <div class="sub-status">
+        <span class="dot" id="connDot"></span>
+        <span id="connText">Iniciando...</span>
+        <button id="retryFeedBtn" style="padding:2px 6px;font-size:10px;">Reconectar</button>
       </div>
     </div>
-    <div class="controls-row">
-      <select id="symbolSelect">
-        <option value="BTCUSDT">BTCUSDT</option>
-        <option value="ONDOUSDT">ONDOUSDT</option>
-        <option value="SOLUSDT">SOLUSDT</option>
-      </select>
-      <select id="tfSelect">
-        <option value="1m">1m</option>
-        <option value="3m">3m</option>
-        <option value="15m" selected>15m</option>
-        <option value="1h">1h</option>
-      </select>
-      <button id="downloadBtn" class="primary">Descargar HTML</button>
-    </div>
-  </header>
+  </div>
+  <div class="controls-row">
+    <select id="symbolSelect">
+      <option value="BTCUSDT">BTCUSDT</option>
+      <option value="ONDOUSDT">ONDOUSDT</option>
+      <option value="SOLUSDT">SOLUSDT</option>
+    </select>
+    <select id="tfSelect">
+      <option value="1m">1m</option>
+      <option value="3m">3m</option>
+      <option value="15m" selected>15m</option>
+      <option value="1h">1h</option>
+    </select>
+    <button id="downloadBtn" class="primary">Guardar HTML</button>
+  </div>
+</header>
 
-  <!-- BARRA DE GESTIÓN MULTI-CUENTA -->
-  <div class="account-bar">
-    <div class="account-pills" id="accountTabsContainer"></div>
-    <div style="display:flex;gap:6px;align-items:center;">
-      <button id="openNewAccModalBtn" class="secondary" style="padding:5px 9px;font-size:11px;">+ Nueva Cuenta</button>
-      <button id="editAccModalBtn" style="padding:5px 9px;font-size:11px;">Ajustar Cuenta</button>
+<div class="account-bar">
+  <div class="account-pills" id="accountTabsContainer"></div>
+  <div style="display:flex;gap:6px;align-items:center;">
+    <button id="openNewAccModalBtn" class="secondary" style="padding:5px 9px;font-size:11px;">+ Nueva Cuenta</button>
+    <button id="editAccModalBtn" style="padding:5px 9px;font-size:11px;">Ajustar</button>
+  </div>
+</div>
+
+<div class="container">
+  <div id="tab-chart" class="tab-section active-tab">
+    <div class="card">
+      <div class="price-hero">
+        <span class="price-big" id="livePrice">--</span>
+        <span class="price-change" id="priceDelta">0.00%</span>
+        <span style="font-size:11px;color:var(--text-muted);" id="pdLevelsText">PDH: -- | PDL: --</span>
+      </div>
+      <canvas id="chartCanvas"></canvas>
+      <div class="layers">
+        <button class="layer-pill on" data-layer="pd">PDH / PDL</button>
+        <button class="layer-pill on" data-layer="liq">BSL / SSL</button>
+        <button class="layer-pill on" data-layer="ob">Order Blocks</button>
+        <button class="layer-pill on" data-layer="fvg">FVG</button>
+        <button class="layer-pill on" data-layer="setup">Setup (Entry/SL/TP)</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Semáforo Institucional FutureTP</span>
+        <span class="badge" id="signalBadge">EN VIGILANCIA</span>
+      </div>
+      <div class="check-item"><span>1. Barrido de Liquidez (Sweep SSL / BSL)</span><strong id="chkSweep" style="color:var(--amber)">Analizando</strong></div>
+      <div class="check-item"><span>2. Estructura OB / FVG Activa</span><strong id="chkZone" style="color:var(--green)">Detectado</strong></div>
+      <div class="check-item"><span>3. Mercado y Horario Institucional</span><strong id="chkSession">--</strong></div>
+      <div class="check-item"><span>4. Regla Apalancamiento Kraken Prop</span><strong id="chkLevRule" style="color:var(--green)">OK (≤ 10x)</strong></div>
+    </div>
+
+    <div class="card setup-card">
+      <div class="card-header">
+        <div>
+          <span class="card-title" style="color:var(--text-main);">Posible Operación · <span id="setupAccNameLabel" style="color:#60a5fa;">Cuenta Activa</span></span>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:2px;" id="setupReason">Basado en liquidez cercana y Order Block activo</div>
+        </div>
+        <div style="display:flex;gap:4px;">
+          <button id="forceLongBtn" style="padding:4px 8px;font-size:11px;" class="active">LONG</button>
+          <button id="forceShortBtn" style="padding:4px 8px;font-size:11px;">SHORT</button>
+        </div>
+      </div>
+      <div class="grid-3">
+        <div class="stat-box"><div class="stat-label">Entrada Limit</div><div class="stat-val" id="setupEntry" style="color:var(--blue)">--</div><button class="copy-mini" onclick="copyVal('setupEntry')">Copiar</button></div>
+        <div class="stat-box"><div class="stat-label">SL Estructural</div><div class="stat-val" id="setupSl" style="color:var(--red)">--</div><button class="copy-mini" onclick="copyVal('setupSl')">Copiar</button></div>
+        <div class="stat-box"><div class="stat-label">TP Objetivo (1:2.5)</div><div class="stat-val" id="setupTp" style="color:var(--green)">--</div><button class="copy-mini" onclick="copyVal('setupTp')">Copiar</button></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--text-muted);padding-top:4px;">
+        <span id="setupDistInfo">Distancia SL: -- | Lotaje: --</span>
+        <strong style="color:var(--green);" id="setupRrInfo">R:R 1:2.5</strong>
+      </div>
     </div>
   </div>
 
-  <div class="container">
-    <!-- COLUMNA IZQUIERDA -->
-    <div id="tab-chart" class="tab-section active-tab">
-      <div class="card">
-        <div class="price-hero">
-          <span class="price-big" id="livePrice">--</span>
-          <span class="price-change" id="priceDelta">0.00%</span>
-          <span style="font-size:11px;color:var(--text-muted);" id="pdLevelsText">PDH: -- | PDL: --</span>
-        </div>
-        <canvas id="chartCanvas"></canvas>
-        <div class="layers">
-          <button class="layer-pill on" data-layer="pd">PDH / PDL</button>
-          <button class="layer-pill on" data-layer="liq">BSL / SSL</button>
-          <button class="layer-pill on" data-layer="ob">Order Blocks</button>
-          <button class="layer-pill on" data-layer="fvg">FVG</button>
-          <button class="layer-pill on" data-layer="setup">Setup (Entry/SL/TP)</button>
-        </div>
-      </div>
-
+  <div>
+    <div id="tab-risk" class="tab-section">
       <div class="card">
         <div class="card-header">
-          <span class="card-title">Semáforo Institucional FutureTP</span>
-          <span class="badge" id="signalBadge">EN VIGILANCIA</span>
+          <span class="card-title" id="calcCardTitle">Calculadora · $25K</span>
+          <select id="riskPctSelect" style="font-size:11px;padding:4px 8px;">
+            <option value="0.0025">Riesgo 0.25%</option>
+            <option value="0.005" selected>Riesgo 0.50%</option>
+            <option value="0.01">Riesgo 1.00%</option>
+          </select>
         </div>
-        <div class="check-item"><span>1. Barrido de Liquidez (Sweep SSL / BSL)</span><strong id="chkSweep" style="color:var(--amber)">Analizando</strong></div>
-        <div class="check-item"><span>2. Estructura OB / FVG Activa</span><strong id="chkZone" style="color:var(--green)">Detectado</strong></div>
-        <div class="check-item"><span>3. Mercado y Horario Institucional</span><strong id="chkSession">--</strong></div>
-        <div class="check-item"><span>4. Regla Apalancamiento Kraken Prop</span><strong id="chkLevRule" style="color:var(--green)">OK (≤ 10x)</strong></div>
-      </div>
-
-      <div class="card setup-card">
-        <div class="card-header">
-          <div>
-            <span class="card-title" style="color:var(--text-main);">Posible Operación · <span id="setupAccNameLabel" style="color:#60a5fa;">Cuenta Activa</span></span>
-            <div style="font-size:11px;color:var(--text-muted);margin-top:2px;" id="setupReason">Basado en liquidez cercana y Order Block activo</div>
+        <div class="lev-box">
+          <div class="lev-top">
+            <span>Apalancamiento Kraken Prop</span>
+            <strong style="color:var(--green);font-size:14px;" id="levDisplay">10x <span style="font-size:11px;color:var(--text-muted);">(Máx 10x BTC)</span></strong>
           </div>
-          <div style="display:flex;gap:4px;">
-            <button id="forceLongBtn" style="padding:4px 8px;font-size:11px;" class="active">LONG</button>
-            <button id="forceShortBtn" style="padding:4px 8px;font-size:11px;">SHORT</button>
+          <input type="range" id="levSlider" min="1" max="10" step="1" value="10" />
+          <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted);margin-top:4px;">
+            <span>1x Conservador</span><span>5x Altcoins Máx</span><span>10x BTC Máx</span>
           </div>
         </div>
-
-        <div class="grid-3">
-          <div class="stat-box">
-            <div class="stat-label">Entrada Limit</div>
-            <div class="stat-val" id="setupEntry" style="color:var(--blue)">--</div>
-            <button class="copy-mini" onclick="copyVal('setupEntry')">Copiar</button>
+        <div class="grid-2">
+          <div class="stat-box"><div class="stat-label" id="riskLabel">Lotaje ($125 riesgo)</div><div class="stat-val" id="posSize">--</div></div>
+          <div class="stat-box"><div class="stat-label">Margen Necesario</div><div class="stat-val" id="marginReq" style="color:var(--blue)">--</div></div>
+          <div class="stat-box"><div class="stat-label">Valor Nominal</div><div class="stat-val" id="notionalVal">--</div></div>
+          <div class="stat-box"><div class="stat-label">SL Estructural</div><div class="stat-val" id="slVal" style="color:var(--red)">--</div></div>
+        </div>
+        <div class="lev-box" style="margin-bottom:10px;">
+          <div class="lev-top">
+            <span>Escudo Anti-Overtrading (Cuenta)</span>
+            <strong id="dailyTradesCounter" style="color:var(--green);">0 / 3 trades</strong>
           </div>
-          <div class="stat-box">
-            <div class="stat-label">SL Estructural</div>
-            <div class="stat-val" id="setupSl" style="color:var(--red)">--</div>
-            <button class="copy-mini" onclick="copyVal('setupSl')">Copiar</button>
-          </div>
-          <div class="stat-box">
-            <div class="stat-label">TP Objetivo (1:2.5)</div>
-            <div class="stat-val" id="setupTp" style="color:var(--green)">--</div>
-            <button class="copy-mini" onclick="copyVal('setupTp')">Copiar</button>
+          <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--text-muted);">
+            <span>Máx. trades/día en esta cuenta:</span>
+            <select id="maxDailyTradesSelect" style="padding:3px 7px;font-size:11px;">
+              <option value="2">2 trades</option>
+              <option value="3" selected>3 trades</option>
+              <option value="5">5 trades</option>
+              <option value="99">Sin límite</option>
+            </select>
           </div>
         </div>
-
-        <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--text-muted);padding-top:4px;">
-          <span id="setupDistInfo">Distancia SL: -- | Lotaje: --</span>
-          <strong style="color:var(--green);" id="setupRrInfo">R:R 1:2.5</strong>
+        <div id="overtradingLockBanner" class="lock-banner">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:6px;">
+            <div>
+              <strong style="color:var(--red);">BLOQUEO ANTI-OVERTRADING ACTIVO</strong>
+              <div id="lockReasonText" style="font-size:11px;color:var(--text-muted);margin-top:2px;">Límite diario alcanzado.</div>
+            </div>
+            <button id="overrideLockBtn" style="padding:4px 8px;font-size:11px;">Desbloquear</button>
+          </div>
+        </div>
+        <div id="openPositionsContainer"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <button id="buyBtn" class="primary">Abrir LONG <span class="btnSymLabel">BTC</span></button>
+          <button id="sellBtn" class="danger">Abrir SHORT <span class="btnSymLabel">BTC</span></button>
         </div>
       </div>
     </div>
 
-    <!-- COLUMNA DERECHA -->
-    <div>
-      <div id="tab-risk" class="tab-section">
-        <div class="card">
-          <div class="card-header">
-            <span class="card-title" id="calcCardTitle">Calculadora · $25K</span>
-            <select id="riskPctSelect" style="font-size:11px;padding:4px 8px;">
-              <option value="0.0025">Riesgo 0.25%</option>
-              <option value="0.005" selected>Riesgo 0.50%</option>
-              <option value="0.01">Riesgo 1.00%</option>
-            </select>
-          </div>
-
-          <div class="lev-box">
-            <div class="lev-top">
-              <span>Apalancamiento Kraken Prop</span>
-              <strong style="color:var(--green);font-size:14px;" id="levDisplay">10x <span style="font-size:11px;color:var(--text-muted);">(Máx 10x BTC)</span></strong>
-            </div>
-            <input type="range" id="levSlider" min="1" max="10" step="1" value="10" />
-            <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted);margin-top:4px;">
-              <span>1x Conservador</span>
-              <span>5x Altcoins Máx</span>
-              <span>10x BTC Máx</span>
-            </div>
-          </div>
-
-          <div class="grid-2">
-            <div class="stat-box"><div class="stat-label" id="riskLabel">Lotaje ($125 riesgo)</div><div class="stat-val" id="posSize">--</div></div>
-            <div class="stat-box"><div class="stat-label">Margen Necesario</div><div class="stat-val" id="marginReq" style="color:var(--blue)">--</div></div>
-            <div class="stat-box"><div class="stat-label">Valor Nominal</div><div class="stat-val" id="notionalVal">--</div></div>
-            <div class="stat-box"><div class="stat-label">SL Estructural</div><div class="stat-val" id="slVal" style="color:var(--red)">--</div></div>
-          </div>
-
-          <div class="lev-box" style="margin-bottom:10px;">
-            <div class="lev-top">
-              <span>Escudo Anti-Overtrading (Cuenta)</span>
-              <strong id="dailyTradesCounter" style="color:var(--green);">0 / 3 trades</strong>
-            </div>
-            <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--text-muted);">
-              <span>Máx. trades/día en esta cuenta:</span>
-              <select id="maxDailyTradesSelect" style="padding:3px 7px;font-size:11px;">
-                <option value="2">2 trades</option>
-                <option value="3" selected>3 trades</option>
-                <option value="5">5 trades</option>
-                <option value="99">Sin límite</option>
-              </select>
-            </div>
-          </div>
-
-          <div id="overtradingLockBanner" class="lock-banner">
-            <div style="display:flex;justify-content:space-between;align-items:center;gap:6px;">
-              <div>
-                <strong style="color:var(--red);">BLOQUEO ANTI-OVERTRADING ACTIVO</strong>
-                <div id="lockReasonText" style="font-size:11px;color:var(--text-muted);margin-top:2px;">Límite diario alcanzado en esta cuenta.</div>
-              </div>
-              <button id="overrideLockBtn" style="padding:4px 8px;font-size:11px;">Desbloquear</button>
-            </div>
-          </div>
-
-          <div id="openPositionsContainer"></div>
-
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-            <button id="buyBtn" class="primary">Abrir LONG en <span class="btnSymLabel">BTC</span></button>
-            <button id="sellBtn" class="danger">Abrir SHORT en <span class="btnSymLabel">BTC</span></button>
+    <div id="tab-journal" class="tab-section">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title" id="journalHeaderTitle">Estado Desafío</span>
+          <div style="display:flex;gap:4px;flex-wrap:wrap;">
+            <button id="exportCsvBtn" class="secondary" style="padding:5px 7px;font-size:11px;">CSV</button>
+            <button id="backupJsonBtn" class="secondary" style="padding:5px 7px;font-size:11px;">Respaldo</button>
+            <button id="restoreJsonBtn" style="padding:5px 7px;font-size:11px;">Cargar</button>
+            <input type="file" id="restoreFileInput" accept=".json" style="display:none;" />
+            <button id="resetChallengeBtn" class="danger" style="padding:5px 7px;font-size:11px;">Limpiar</button>
           </div>
         </div>
+        <div class="grid-2">
+          <div class="stat-box"><div class="stat-label">Balance Cuenta</div><div class="stat-val" id="currentBalanceVal">$25,000.00</div></div>
+          <div class="stat-box"><div class="stat-label">PnL Neto / Acierto</div><div class="stat-val" id="totalPnl">$0.00 (0%)</div></div>
+        </div>
+        <div class="progress-wrap">
+          <div class="progress-top"><span id="targetLabel">Objetivo (+8.0%)</span><span id="targetPct">0.00% / 8.00%</span></div>
+          <div class="bar"><div class="bar-fill" id="targetBar" style="width:0%"></div></div>
+        </div>
+        <div class="progress-wrap">
+          <div class="progress-top"><span id="ddLabel">Drawdown Máximo (-6.0%)</span><span id="ddPct">0.00% / 6.00%</span></div>
+          <div class="bar"><div class="bar-fill red" id="ddBar" style="width:0%"></div></div>
+        </div>
+        <div style="border-top:1px solid var(--border);padding-top:8px;margin-top:8px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+            <span class="stat-label">Registrar cierre manual en esta cuenta:</span>
+            <span style="font-size:10px;color:var(--green);">Guardado por cuenta ✓</span>
+          </div>
+          <div class="manual-row">
+            <select id="manualSide"><option value="LONG">LONG</option><option value="SHORT">SHORT</option></select>
+            <input type="number" id="manualPnlInput" placeholder="PnL USD (ej: 320 o -110)" step="0.01" />
+            <button id="addManualBtn" class="primary">Guardar</button>
+          </div>
+        </div>
+        <div id="journalList" style="margin-top:10px;max-height:240px;overflow-y:auto;"></div>
       </div>
+    </div>
+  </div>
+</div>
 
-      <div id="tab-journal" class="tab-section">
-        <div class="card">
-          <div class="card-header">
-            <span class="card-title" id="journalHeaderTitle">Estado Desafío</span>
-            <div style="display:flex;gap:4px;flex-wrap:wrap;">
-              <button id="exportCsvBtn" class="secondary" style="padding:5px 7px;font-size:11px;">CSV Cuenta</button>
-              <button id="backupJsonBtn" class="secondary" style="padding:5px 7px;font-size:11px;">Respaldo Todo</button>
-              <button id="restoreJsonBtn" style="padding:5px 7px;font-size:11px;">Cargar</button>
-              <input type="file" id="restoreFileInput" accept=".json" style="display:none;" />
-              <button id="resetChallengeBtn" class="danger" style="padding:5px 7px;font-size:11px;">Limpiar</button>
-            </div>
-          </div>
+<div class="modal-backdrop" id="accountModal">
+  <div class="modal-box">
+    <div class="card-header">
+      <strong id="modalTitle" style="font-size:14px;">Nueva Cuenta de Fondeo</strong>
+      <button id="closeModalBtn" style="padding:3px 8px;">✕</button>
+    </div>
+    <div class="form-group">
+      <label>Nombre (ej. Kraken 25K #1, Kraken 50K)</label>
+      <input type="text" id="accNameInput" placeholder="Kraken 25K #1" />
+    </div>
+    <div class="grid-2">
+      <div class="form-group">
+        <label>Capital Inicial ($)</label>
+        <select id="accSizeInput">
+          <option value="10000">$10,000</option>
+          <option value="25000" selected>$25,000</option>
+          <option value="50000">$50,000</option>
+          <option value="100000">$100,000</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Plantilla de Reglas</label>
+        <select id="accPresetSelect">
+          <option value="challenge">Challenge (+8% / -6%)</option>
+          <option value="advanced">Advanced (+9% / -3%)</option>
+          <option value="funded">Fondeada (+5% / -6%)</option>
+          <option value="custom">Personalizado</option>
+        </select>
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="form-group"><label>Objetivo (%)</label><input type="number" id="accGoalInput" value="8" step="0.5" /></div>
+      <div class="form-group"><label>Drawdown Máx (%)</label><input type="number" id="accDdInput" value="6" step="0.5" /></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;gap:8px;margin-top:12px;">
+      <button id="deleteAccountBtn" class="danger" style="display:none;">Eliminar</button>
+      <div style="display:flex;gap:8px;margin-left:auto;">
+        <button id="cancelModalBtn">Cancelar</button>
+        <button id="saveAccountBtn" class="primary">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
 
-          <div class="grid-2">
-            <div class="stat-box"><div class="stat-label">Balance Actual Cuenta</div><div class="stat-val" id="currentBalanceVal">$25,000.00</div></div>
-            <div class="stat-box"><div class="stat-label">PnL Neto / Acierto</div><div class="stat-val" id="totalPnl">$0.00 (0%)</div></div>
-          </div>
+<div class="bottom-nav">
+  <button class="nav-btn active" data-tab="tab-chart">Gráfico</button>
+  <button class="nav-btn" data-tab="tab-risk">Orden / Riesgo</button>
+  <button class="nav-btn" data-tab="tab-journal">Cuentas / Diario</button>
+</div>
 
-          <div class="progress-wrap">
-            <div class="progress-top"><span id="targetLabel">Objetivo (+8.0%)</span><span id="targetPct">0.00% / 8.00%</span></div>
-            <div class="bar"><div class="bar-fill" id="targetBar" style="width:0%"></div></div>
-          </div>
-          <div class="progress-wrap">
-            <div class="progress-top"><span id="ddLabel">Drawdown Máximo (-6.0%)</span><span id="ddPct">0.00% / 6.00%</span></div>
-            <div class="bar"><div class="bar-fill red" id="ddBar" style="width:0%"></div></div>
-          </div>
+<script>
+const STORAGE_KEY_V5 = "futuretp_multicuentas_v5_2";
+const LEGACY_KEYS = ["futuretp_multicuentas_v5_1", "futuretp_multicuentas_v5_0", "futuretp_copilot_journal_master", "futuretp_copilot_state_v4_1"];
+let state = {
+  symbol: "BTCUSDT", tf: "15m", candles: [],
+  livePrices: { BTCUSDT: 0, ONDOUSDT: 0, SOLUSDT: 0 },
+  pdh: null, pdl: null, pollTimer: null,
+  layers: { pd: true, liq: true, ob: true, fvg: true, setup: true },
+  setupSide: "AUTO", currentSetup: null, activeAccountId: null, accounts: []
+};
+let editingAccountId = null;
 
-          <div style="border-top:1px solid var(--border);padding-top:8px;margin-top:8px;">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
-              <span class="stat-label">Registrar cierre manual en esta cuenta:</span>
-              <span style="font-size:10px;color:var(--green);">Guardado por cuenta ✓</span>
-            </div>
-            <div class="manual-row">
-              <select id="manualSide">
-                <option value="LONG">LONG</op
+function uid() { return "acc_" + Math.random().toString(36).slice(2, 9); }
+function getTodayStr() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+function createDefaultAccounts(trades = [], size = 25000, mode = "challenge") {
+  const adv = mode === "advanced";
+  return [
+    { id: uid(), name: `Kraken ${size / 1000}K #1`, size, goalPct: adv ? 9 : 8, maxDdPct: adv ? 3 : 6, riskPct: adv ? 0.0025 : 0.005, leverage: 10, maxDailyTrades: 3, lockOverridden: false, trades, openPositions: [] },
+    { id: uid(), name: "Kraken 25K #2", size: 25000, goalPct: 8, maxDdPct: 6, riskPct: 0.005, leverage: 10, maxDailyTrades: 3, lockOverridden: false, trades: [], openPositions: [] },
+    { id: uid(), name: "Kraken 50K", size: 50000, goalPct: 8, maxDdPct: 6, riskPct: 0.005, leverage: 10, maxDailyTrades: 3, lockOverridden: false, trades: [], openPositions: [] }
+  ];
+}
+function getActiveAccount() {
+  let acc = state.accounts.find(a => a.id === state.activeAccountId);
+  if (!acc && state.accounts.length) { acc = state.accounts[0]; state.activeAccountId = acc.id; }
+  return acc;
+}
+function safeGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+function safeSet(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+function saveState() { safeSet(STORAGE_KEY_V5, JSON.stringify({ activeAccountId: state.activeAccountId, accounts: state.accounts })); }
+function loadSaved() {
+  const raw = safeGet(STORAGE_KEY_V5);
+  if (raw) {
+    try {
+      const p = JSON.parse(raw);
+      if (Array.isArray(p.accounts) && p.accounts.length) {
+        state.accounts = p.accounts;
+        state.activeAccountId = p.activeAccountId || p.accounts[0].id;
+        return;
+      }
+    } catch (e) {}
+  }
+  for (const k of LEGACY_KEYS) {
+    const old = safeGet(k);
+    if (old) {
+      try {
+        const p = JSON.parse(old);
+        if (Array.isArray(p.accounts) && p.accounts.length) {
+          state.accounts = p.accounts;
+          state.activeAccountId = p.activeAccountId || p.accounts[0].id;
+          saveState();
+          return;
+        }
+        if (Array.isArray(p.trades)) {
+          state.accounts = createDefaultAccounts(p.trades, p.accountSize || 25000, p.accountMode || "challenge");
+          state.activeAccountId = state.accounts[0].id;
+          saveState();
+          return;
+        }
+      } catch (e) {}
+    }
+  }
+  state.accounts = createDefaultAccounts();
+  state.activeAccountId = state.accounts[0].id;
+  saveState();
+}
+
+function getMaxLeverage(sym) { return sym === "BTCUSDT" ? 10 : 5; }
+function syncControlsToAccount() {
+  const acc = getActiveAccount();
+  if (!acc) return;
+  const maxLev = getMaxLeverage(state.symbol);
+  const slider = document.getElementById("levSlider");
+  slider.max = String(maxLev);
+  if (acc.leverage > maxLev) acc.leverage = maxLev;
+  slider.value = String(acc.leverage);
+  document.getElementById("levDisplay").innerHTML = `${acc.leverage}x <span style="font-size:11px;color:var(--text-muted);">(Máx ${maxLev}x ${state.symbol.replace("USDT", "")})</span>`;
+  document.getElementById("chkLevRule").textContent = `OK (${acc.leverage}x / Máx ${maxLev}x)`;
+  document.getElementById("riskPctSelect").value = String(acc.riskPct || 0.005);
+  document.getElementById("maxDailyTradesSelect").value = String(acc.maxDailyTrades || 3);
+  document.querySelectorAll(".btnSymLabel").forEach(el => el.textContent = state.symbol.replace("USDT", ""));
+}
+
+function renderAccountTabs() {
+  const c = document.getElementById("accountTabsContainer");
+  c.innerHTML = state.accounts.map(acc => {
+    const net = acc.trades.reduce((s, t) => s + t.pnl, 0);
+    const openCnt = (acc.openPositions || []).length;
+    const sel = acc.id === state.activeAccountId;
+    return `<button class="acc-pill ${sel ? "selected" : ""}" onclick="selectAccount('${acc.id}')"><strong>${acc.name}</strong><span style="color:${net >= 0 ? "var(--green)" : "var(--red)"};">${net >= 0 ? "+" : ""}$${net.toFixed(0)}</span>${openCnt > 0 ? `<span class="badge blue" style="padding:1px 5px;font-size:10px;">${openCnt} viva</span>` : ""}</button>`;
+  }).join("");
+}
+function selectAccount(id) { state.activeAccountId = id; saveState(); syncControlsToAccount(); updateRiskAndUI(); }
+
+function updateKillzoneStatus() {
+  const now = new Date(), day = now.getDay(), mins = now.getHours() * 60 + now.getMinutes();
+  const badge = document.getElementById("killzoneBadge"), chk = document.getElementById("chkSession");
+  if (day === 6 || (day === 0 && mins < 23 * 60)) {
+    badge.textContent = "Fin de Semana"; badge.className = "badge short";
+    chk.textContent = "Fin de semana (Baja liquidez)"; chk.style.color = "var(--red)";
+  } else if (mins >= 9 * 60 && mins < 12 * 60) {
+    badge.textContent = "KZ Londres"; badge.className = "badge";
+    chk.textContent = "Killzone Londres (Alta liquidez)"; chk.style.color = "var(--green)";
+  } else if (mins >= 14 * 60 + 30 && mins < 17 * 60 + 30) {
+    badge.textContent = "KZ Nueva York"; badge.className = "badge";
+    chk.textContent = "Killzone Nueva York (Máximo volumen)"; chk.style.color = "var(--green)";
+  } else {
+    badge.textContent = "Fuera KZ"; badge.className = "badge warn";
+    chk.textContent = "Sesión tranquila (Exigir barrido limpio)"; chk.style.color = "var(--amber)";
+  }
+}
+
+function copyVal(id) {
+  const t = document.getElementById(id).textContent.replace("$", "");
+  if (navigator.clipboard) navigator.clipboard.writeText(t);
+}
+function fmtPrice(val, sym = state.symbol) {
+  if (!val || isNaN(val)) return "--";
+  return Number(val).toFixed(sym === "ONDOUSDT" ? 4 : 2);
+}
+
+async function fetchJson(url) {
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), 5000);
+  try {
+    const r = await fetch(url, { signal: ctrl.signal });
+    clearTimeout(t);
+    if (!r.ok) return null;
+    return await r.json();
+  } catch (e) {
+    clearTimeout(t);
+    return null;
+  }
+}
+
+async function getMarketCandles(sym, tf, limit = 80) {
+  const bUrls = [
+    `https://data-api.binance.vision/api/v3/klines?symbol=${sym}&interval=${tf}&limit=${limit}`,
+    `https://api.binance.com/api/v3/klines?symbol=${sym}&interval=${tf}&limit=${limit}`,
+    `https://api4.binance.com/api/v3/klines?symbol=${sym}&interval=${tf}&limit=${limit}`
+  ];
+  for (const u of bUrls) {
+    const d = await fetchJson(u);
+    if (Array.isArray(d) && d.length >= 2) {
+      return { src: "Binance", list: d.map(k => ({ time: +k[0], open: +k[1], high: +k[2], low: +k[3], close: +k[4] })) };
+    }
+  }
+  const cbMap = { "1m": 60, "3m": 300, "15m": 900, "1h": 3600, "1d": 86400 };
+  const cbPair = sym.replace("USDT", "-USD");
+  const cbData = await fetchJson(`https://api.exchange.coinbase.com/products/${cbPair}/candles?granularity=${cbMap[tf] || 900}`);
+  if (Array.isArray(cbData) && cbData.length >= 2) {
+    return {
+      src: "Coinbase",
+      list: cbData.slice(0, limit).reverse().map(k => ({ time: k[0] * 1000, low: +k[1], high: +k[2], open: +k[3], close: +k[4] }))
+    };
+  }
+  return null;
+}
+
+async function refreshAllMarketData() {
+  const sym = state.symbol, tf = state.tf;
+  const dot = document.getElementById("connDot"), txt = document.getElementById("connText");
+  const res = await getMarketCandles(sym, tf, 80);
+  if (res && res.list.length) {
+    state.candles = res.list;
+    state.livePrices[sym] = res.list[res.list.length - 1].close;
+    dot.classList.remove("warn");
+    txt.textContent = `En vivo (${res.src}) · ${sym} ${tf}`;
+    renderAll();
+  } else if (!state.candles.length) {
+    dot.classList.add("warn");
+    txt.textContent = `Sin respuesta de red · Pulsa Reconectar`;
+  }
+
+  const acc = getActiveAccount();
+  if (acc && acc.openPositions && acc.openPositions.length) {
+    for (const p of acc.openPositions) {
+      if (p.symbol !== sym) {
+        const sub = await getMarketCandles(p.symbol, "1m", 2);
+        if (sub && sub.list.length) state.livePrices[p.symbol] = sub.list[sub.list.length - 1].close;
+      }
+    }
+    renderOpenPositions();
+  }
+
+  if (!state.pdh || !state.pdl) {
+    const daily = await getMarketCandles(sym, "1d", 2);
+    if (daily && daily.list.length >= 2) {
+      state.pdh = daily.list[0].high;
+      state.pdl = daily.list[0].low;
+      document.getElementById("pdLevelsText").textContent = `PDH: $${fmtPrice(state.pdh)} | PDL: $${fmtPrice(state.pdl)}`;
+      drawCharts();
+    }
+  }
+}
+
+function startLiveFeed() {
+  if (state.pollTimer) clearInterval(state.pollTimer);
+  state.candles = [];
+  state.pdh = null;
+  state.pdl = null;
+  document.getElementById("connText").textContent = `Cargando ${state.symbol} (${state.tf})...`;
+  refreshAllMarketData();
+  state.pollTimer = setInterval(refreshAllMarketData, 4000);
+}
+
+function computeTradeSetup(data) {
+  if (data.length < 2) return null;
+  const last = data[data.length - 1].close;
+  const recent = data.slice(-16);
+  const swingLow = Math.min(...recent.map(k => k.low));
+  const swingHigh = Math.max(...recent.map(k => k.high));
+  const prev = data[data.length - 2];
+  const older = data.length > 5 ? data.slice(-16, -2) : data.slice(0, -1);
+  const prevLow = Math.min(...older.map(k => k.low));
+  const prevHigh = Math.max(...older.map(k => k.high));
+
+  let side = state.setupSide, sweepLabel = "Sin barrido reciente", sweepColor = "var(--amber)", badgeText = "EN VIGILANCIA";
+  const bullSweep = (data[data.length - 1].low < prevLow && last > prevLow) || (prev.low < prevLow && prev.close > prevLow);
+  const bearSweep = (data[data.length - 1].high > prevHigh && last < prevHigh) || (prev.high > prevHigh && prev.close < prevHigh);
+
+  if (bullSweep) { sweepLabel = "SSL Sweep Alcista"; sweepColor = "var(--green)"; badgeText = "POSIBLE LONG"; if (side === "AUTO") side = "LONG"; }
+  else if (bearSweep) { sweepLabel = "BSL Sweep Bajista"; sweepColor = "var(--red)"; badgeText = "POSIBLE SHORT"; if (side === "AUTO") side = "SHORT"; }
+  else if (side === "AUTO") { side = Math.abs(last - swingLow) <= Math.abs(swingHigh - last) ? "LONG" : "SHORT"; }
+
+  const entry = last;
+  let sl, tp, reason;
+  if (side === "LONG") {
+    sl = Math.max(entry * 0.9965, Math.min(entry * 0.9985, swingLow * 0.9994));
+    tp = entry + (entry - sl) * 2.5;
+    reason = bullSweep ? "LONG tras barrido SSL · SL bajo mínimo" : "LONG proyectado · SL bajo soporte OB/SSL";
+  } else {
+    sl = Math.min(entry * 1.0035, Math.max(entry * 1.0015, swingHigh * 1.0006));
+    tp = entry - (sl - entry) * 2.5;
+    reason = bearSweep ? "SHORT tras barrido BSL · SL sobre máximo" : "SHORT proyectado · SL sobre resistencia OB/BSL";
+  }
+  state.currentSetup = { side, entry, sl, tp, reason, sweepLabel, sweepColor, badgeText };
+  return state.currentSetup;
+}
+
+function drawCharts() {
+  const c = document.getElementById("chartCanvas");
+  const dpr = window.devicePixelRatio || 1;
+  c.width = c.clientWidth * dpr; c.height = c.clientHeight * dpr;
+  const ctx = c.getContext("2d");
+  ctx.scale(dpr, dpr);
+  const W = c.clientWidth, H = c.clientHeight;
+  ctx.clearRect(0, 0, W, H);
+  const data = state.candles;
+  if (!data.length) return;
+
+  const setup = computeTradeSetup(data);
+  const padR = 68, padT = 14, padB = 18, plotW = W - padR, plotH = H - padT - padB;
+  let minP = Infinity, maxP = -Infinity;
+  data.forEach(k => { if (k.low < minP) minP = k.low; if (k.high > maxP) maxP = k.high; });
+  if (state.layers.setup && setup) { minP = Math.min(minP, setup.sl, setup.tp); maxP = Math.max(maxP, setup.sl, setup.tp); }
+  const margin = (maxP - minP) * 0.1 || maxP * 0.002;
+  minP -= margin; maxP += margin;
+  const yOf = p => padT + ((maxP - p) / (maxP - minP)) * plotH;
+  const stepX = plotW / Math.max(data.length, 10);
+
+  ctx.strokeStyle = "#141d2e"; ctx.lineWidth = 1; ctx.fillStyle = "#7e8ea8"; ctx.font = "10px monospace";
+  for (let i = 0; i <= 4; i++) {
+    const val = minP + ((maxP - minP) * i) / 4, y = yOf(val);
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(plotW, y); ctx.stroke();
+    ctx.fillText(fmtPrice(val), plotW + 6, y + 3);
+  }
+  if (state.layers.pd && state.pdh && state.pdl) {
+    ctx.setLineDash([6, 4]);
+    if (state.pdh >= minP && state.pdh <= maxP) { ctx.strokeStyle = "#f59e0b"; ctx.beginPath(); ctx.moveTo(0, yOf(state.pdh)); ctx.lineTo(plotW, yOf(state.pdh)); ctx.stroke(); ctx.fillStyle = "#f59e0b"; ctx.fillText(`PDH ${fmtPrice(state.pdh)}`, 6, yOf(state.pdh) - 4); }
+    if (state.pdl >= minP && state.pdl <= maxP) { ctx.strokeStyle = "#38bdf8"; ctx.beginPath(); ctx.moveTo(0, yOf(state.pdl)); ctx.lineTo(plotW, yOf(state.pdl)); ctx.stroke(); ctx.fillStyle = "#38bdf8"; ctx.fillText(`PDL ${fmtPrice(state.pdl)}`, 6, yOf(state.pdl) - 4); }
+    ctx.setLineDash([]);
+  }
+  if (state.layers.liq && data.length >= 4) {
+    const bsl = Math.max(...data.slice(-48).map(k => k.high)), ssl = Math.min(...data.slice(-48).map(k => k.low));
+    ctx.setLineDash([4, 4]);
+    ctx.strokeStyle = "#ef4444"; ctx.beginPath(); ctx.moveTo(0, yOf(bsl)); ctx.lineTo(plotW, yOf(bsl)); ctx.stroke(); ctx.fillStyle = "#ef4444"; ctx.fillText("BSL", 6, yOf(bsl) - 4);
+    ctx.strokeStyle = "#10b981"; ctx.beginPath(); ctx.moveTo(0, yOf(ssl)); ctx.lineTo(plotW, yOf(ssl)); ctx.stroke(); ctx.fillStyle = "#10b981"; ctx.fillText("SSL", 6, yOf(ssl) - 4);
+    ctx.setLineDash([]);
+  }
+  if (state.layers.setup && setup) {
+    const sx = plotW * 0.55;
+    ctx.setLineDash([3, 3]);
+    ctx.strokeStyle = "#ef4444"; ctx.beginPath(); ctx.moveTo(sx, yOf(setup.sl)); ctx.lineTo(plotW, yOf(setup.sl)); ctx.stroke(); ctx.fillStyle = "#ef4444"; ctx.fillText(`SL ${fmtPrice(setup.sl)}`, sx + 4, yOf(setup.sl) - 3);
+    ctx.strokeStyle = "#10b981"; ctx.beginPath(); ctx.moveTo(sx, yOf(setup.tp)); ctx.lineTo(plotW, yOf(setup.tp)); ctx.stroke(); ctx.fillStyle = "#10b981"; ctx.fillText(`TP ${fmtPrice(setup.tp)}`, sx + 4, yOf(setup.tp) - 3);
+    ctx.setLineDash([]);
+  }
+  data.forEach((k, i) => {
+    const x = i * stepX + stepX * 0.5, bull = k.close >= k.open;
+    ctx.strokeStyle = bull ? "#10b981" : "#ef4444"; ctx.fillStyle = bull ? "#10b981" : "#ef4444";
+    ctx.beginPath(); ctx.moveTo(x, yOf(k.high)); ctx.lineTo(x, yOf(k.low)); ctx.stroke();
+    ctx.fillRect(x - stepX * 0.3, yOf(Math.max(k.open, k.close)), stepX * 0.6, Math.max(1.5, Math.abs(yOf(k.close) - yOf(k.open))));
+  });
+  const lp = data[data.length - 1].close, cy = yOf(lp);
+  ctx.fillStyle = "#10b981"; ctx.fillRect(plotW + 2, cy - 8, padR - 4, 16);
+  ctx.fillStyle = "#04160e"; ctx.fillText(fmtPrice(lp), plotW + 5, cy + 3);
+  if (setup) {
+    const sw = document.getElementById("chkSweep"); sw.textContent = setup.sweepLabel; sw.style.color = setup.sweepColor;
+    const b = document.getElementById("signalBadge"); b.textContent = setup.badgeText; b.className = setup.side === "SHORT" ? "badge short" : "badge";
+  }
+}
+
+function renderOpenPositions() {
+  const acc = getActiveAccount(), c = document.getElementById("openPositionsContainer");
+  if (!acc || !acc.openPositions || !acc.openPositions.length) { c.innerHTML = ""; return; }
+  c.innerHTML = acc.openPositions.map((p, idx) => {
+    const cur = state.livePrices[p.symbol] || p.entry;
+    const pnl = (p.side === "LONG" ? cur - p.entry : p.entry - cur) * p.units;
+    const dec = p.symbol === "BTCUSDT" ? 3 : 1;
+    return `<div class="open-pos-card"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;"><strong>${p.side} ${p.units.toFixed(dec)} ${p.symbol.replace("USDT", "")} (${p.lev}x)</strong><strong style="color:${pnl >= 0 ? "var(--green)" : "var(--red)"};">${pnl >= 0 ? "+" : ""}$${pnl.toFixed(2)}</strong></div><div style="font-size:11px;color:var(--text-muted);margin-bottom:6px;">Entrada: $${fmtPrice(p.entry, p.symbol)} · Actual: $${fmtPrice(cur, p.symbol)}</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;"><button onclick="alert('SL movido a Break Even')" style="padding:5px;font-size:11px;">SL a BE</button><button onclick="closeOpenPosition(${idx})" class="danger" style="padding:5px;font-size:11px;">Cerrar</button></div></div>`;
+  }).join("");
+}
+
+function closeOpenPosition(idx) {
+  const acc = getActiveAccount();
+  if (!acc || !acc.openPositions[idx]) return;
+  const p = acc.openPositions[idx], exit = state.livePrices[p.symbol] || p.entry;
+  const pnl = (p.side === "LONG" ? exit - p.entry : p.entry - exit) * p.units - (p.entry * p.units * 0.0008);
+  const now = new Date();
+  acc.trades.push({ date: getTodayStr(), symbol: p.symbol, side: p.side, note: `${fmtPrice(p.entry, p.symbol)} → ${fmtPrice(exit, p.symbol)} (${p.lev}x)`, pnl, time: `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}` });
+  acc.openPositions.splice(idx, 1);
+  saveState(); updateRiskAndUI();
+}
+function deleteTrade(idxEnd) {
+  const acc = getActiveAccount();
+  if (!acc) return;
+  acc.trades.splice(acc.trades.length - 1 - idxEnd, 1);
+  saveState(); updateRiskAndUI();
+}
+
+function updateRiskAndUI() {
+  updateKillzoneStatus(); renderAccountTabs();
+  const acc = getActiveAccount();
+  if (!acc) return;
+  document.getElementById("setupAccNameLabel").textContent = `${acc.name} ($${(acc.size / 1000).toFixed(0)}K)`;
+  document.getElementById("calcCardTitle").textContent = `Calculadora · ${acc.name}`;
+  document.getElementById("journalHeaderTitle").textContent = `Diario · ${acc.name}`;
+
+  if (state.candles.length) {
+    const last = state.candles[state.candles.length - 1].close, first = state.candles[0].open;
+    const pct = ((last - first) / first) * 100;
+    document.getElementById("livePrice").textContent = `$${fmtPrice(last)}`;
+    const de = document.getElementById("priceDelta");
+    de.textContent = `${pct >= 0 ? "+" : ""}${pct.toFixed(2)}%`;
+    de.style.background = pct >= 0 ? "var(--green-bg)" : "var(--red-bg)";
+    de.style.color = pct >= 0 ? "var(--green)" : "var(--red)";
+
+    const s = state.currentSetup, slDist = s ? Math.abs(s.entry - s.sl) : last * 0.0025;
+    const riskUsd = acc.size * acc.riskPct;
+    document.getElementById("riskLabel").textContent = `Lotaje ($${riskUsd.toFixed(0)} riesgo)`;
+    const finalNotional = Math.min((riskUsd / slDist) * last, acc.size * acc.leverage * 0.95);
+    const units = finalNotional / last, dec = state.symbol === "BTCUSDT" ? 3 : 1, asset = state.symbol.replace("USDT", "");
+    document.getElementById("posSize").textContent = `${units.toFixed(dec)} ${asset}`;
+    document.getElementById("marginReq").textContent = `$${(finalNotional / acc.leverage).toFixed(2)} (${acc.leverage}x)`;
+    document.getElementById("notionalVal").textContent = `$${finalNotional.toFixed(0)}`;
+    document.getElementById("slVal").textContent = s ? `$${fmtPrice(s.sl)}` : `$${fmtPrice(last - slDist)}`;
+    if (s) {
+      document.getElementById("setupReason").textContent = s.reason;
+      document.getElementById("setupEntry").textContent = `$${fmtPrice(s.entry)}`;
+      document.getElementById("setupSl").textContent = `$${fmtPrice(s.sl)}`;
+      document.getElementById("setupTp").textContent = `$${fmtPrice(s.tp)}`;
+      document.getElementById("setupDistInfo").textContent = `SL: ${((slDist / s.entry) * 100).toFixed(2)}% | Lotaje: ${units.toFixed(dec)} ${asset}`;
+      document.getElementById("forceLongBtn").classList.toggle("active", s.side === "LONG");
+      document.getElementById("forceShortBtn").classList.toggle("active", s.side === "SHORT");
+    }
+  }
+  renderOpenPositions();
+
+  const totalPnl = acc.trades.reduce((sum, t) => sum + t.pnl, 0);
+  const wins = acc.trades.filter(t => t.pnl > 0).length, total = acc.trades.length;
+  document.getElementById("currentBalanceVal").textContent = `$${(acc.size + totalPnl).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  const tpEl = document.getElementById("totalPnl");
+  tpEl.textContent = `${totalPnl >= 0 ? "+" : ""}$${totalPnl.toFixed(2)} (${total ? ((wins / total) * 100).toFixed(0) : 0}%)`;
+  tpEl.style.color = totalPnl >= 0 ? "var(--green)" : "var(--red)";
+
+  const gainPct = (totalPnl / acc.size) * 100, ddVal = totalPnl < 0 ? Math.abs(gainPct) : 0;
+  document.getElementById("targetLabel").textContent = `Objetivo (+${acc.goalPct.toFixed(1)}%)`;
+  document.getElementById("targetPct").textContent = `${Math.max(0, gainPct).toFixed(2)}% / ${acc.goalPct.toFixed(2)}%`;
+  document.getElementById("targetBar").style.width = `${Math.min(100, Math.max(0, (gainPct / acc.goalPct) * 100))}%`;
+  document.getElementById("ddLabel").textContent = `Drawdown Máximo (-${acc.maxDdPct.toFixed(1)}%)`;
+  document.getElementById("ddPct").textContent = `${ddVal.toFixed(2)}% / ${acc.maxDdPct.toFixed(2)}%`;
+  document.getElementById("ddBar").style.width = `${Math.min(100, (ddVal / acc.maxDdPct) * 100)}%`;
+
+  const today = getTodayStr(), todayTrades = acc.trades.filter(t => (t.date || today) === today);
+  const cntEl = document.getElementById("dailyTradesCounter");
+  cntEl.textContent = `${todayTrades.length} / ${acc.maxDailyTrades === 99 ? "∞" : acc.maxDailyTrades} trades`;
+  cntEl.style.color = todayTrades.length >= acc.maxDailyTrades ? "var(--red)" : "var(--green)";
+  const twoLoss = todayTrades.length >= 2 && todayTrades.slice(-2).every(t => t.pnl < 0);
+  const locked = !acc.lockOverridden && (todayTrades.length >= acc.maxDailyTrades || twoLoss);
+  document.getElementById("overtradingLockBanner").style.display = locked ? "block" : "none";
+  document.getElementById("buyBtn").disabled = locked;
+  document.getElementById("sellBtn").disabled = locked;
+
+  const list = document.getElementById("journalList");
+  list.innerHTML = !total ? `<div style="font-size:12px;color:var(--text-muted);text-align:center;padding:16px;">Sin operaciones cerradas en ${acc.name}.</div>`
+    : acc.trades.slice().reverse().map((t, idx) => `<div class="journal-item"><div><strong>${t.side} ${t.symbol}</strong> <span style="color:var(--text-muted)">(${t.date || ""} ${t.time})</span><div style="font-size:11px;color:var(--text-muted)">${t.note}</div></div><div style="display:flex;align-items:center;gap:6px;"><strong style="color:${t.pnl >= 0 ? "var(--green)" : "var(--red)"}">${t.pnl >= 0 ? "+" : ""}$${t.pnl.toFixed(2)}</strong><button class="del-trade-btn" onclick="deleteTrade(${idx})">✕</button></div></div>`).join("");
+}
+
+function renderAll() { drawCharts(); updateRiskAndUI(); }
+
+function openLiveTrackedOrder(side) {
+  const acc = getActiveAccount();
+  if (!acc || !state.candles.length) return;
+  const entry = state.candles[state.candles.length - 1].close, s = state.currentSetup;
+  const slDist = s ? Math.abs(s.entry - s.sl) : entry * 0.0025;
+  const finalNotional = Math.min((acc.size * acc.riskPct / slDist) * entry, acc.size * acc.leverage * 0.95);
+  if (!acc.openPositions) acc.openPositions = [];
+  acc.openPositions.push({ id: uid(), side, entry, units: finalNotional / entry, lev: acc.leverage, symbol: state.symbol });
+  saveState(); updateRiskAndUI();
+}
+
+const modal = document.getElementById("accountModal");
+document.getElementById("openNewAccModalBtn").onclick = () => {
+  editingAccountId = null; document.getElementById("modalTitle").textContent = "Nueva Cuenta";
+  document.getElementById("accNameInput").value = `Kraken 25K #${state.accounts.length + 1}`;
+  document.getElementById("accSizeInput").value = "25000"; document.getElementById("accPresetSelect").value = "challenge";
+  document.getElementById("accGoalInput").value = "8"; document.getElementById("accDdInput").value = "6";
+  document.getElementById("deleteAccountBtn").style.display = "none"; modal.classList.add("open");
+};
+document.getElementById("editAccModalBtn").onclick = () => {
+  const acc = getActiveAccount(); if (!acc) return;
+  editingAccountId = acc.id; document.getElementById("modalTitle").textContent = `Ajustar ${acc.name}`;
+  document.getElementById("accNameInput").value = acc.name; document.getElementById("accSizeInput").value = String(acc.size);
+  document.getElementById("accPresetSelect").value = "custom"; document.getElementById("accGoalInput").value = String(acc.goalPct);
+  document.getElementById("accDdInput").value = String(acc.maxDdPct);
+  document.getElementById("deleteAccountBtn").style.display = state.accounts.length > 1 ? "inline-block" : "none"; modal.classList.add("open");
+};
+document.getElementById("accPresetSelect").onchange = e => {
+  const v = e.target.value;
+  if (v === "challenge") { document.getElementById("accGoalInput").value = "8"; document.getElementById("accDdInput").value = "6"; }
+  else if (v === "advanced") { document.getElementById("accGoalInput").value = "9"; document.getElementById("accDdInput").value = "3"; }
+  else if (v === "funded") { document.getElementById("accGoalInput").value = "5"; document.getElementById("accDdInput").value = "6"; }
+};
+document.getElementById("saveAccountBtn").onclick = () => {
+  const name = document.getElementById("accNameInput").value.trim() || "Cuenta Kraken";
+  const size = Number(document.getElementById("accSizeInput").value) || 25000;
+  const goalPct = parseFloat(document.getElementById("accGoalInput").value) || 8;
+  const maxDdPct = parseFloat(document.getElementById("accDdInput").value) || 6;
+  if (editingAccountId) {
+    const acc = state.accounts.find(a => a.id === editingAccountId);
+    if (acc) { acc.name = name; acc.size = size; acc.goalPct = goalPct; acc.maxDdPct = maxDdPct; }
+  } else {
+    const n = { id: uid(), name, size, goalPct, maxDdPct, riskPct: maxDdPct <= 3 ? 0.0025 : 0.005, leverage: 10, maxDailyTrades: 3, lockOverridden: false, trades: [], openPositions: [] };
+    state.accounts.push(n); state.activeAccountId = n.id;
+  }
+  modal.classList.remove("open"); saveState(); syncControlsToAccount(); updateRiskAndUI();
+};
+document.getElementById("deleteAccountBtn").onclick = () => {
+  if (!editingAccountId || state.accounts.length <= 1) return;
+  state.accounts = state.accounts.filter(a => a.id !== editingAccountId); state.activeAccountId = state.accounts[0].id;
+  modal.classList.remove("open"); saveState(); syncControlsToAccount(); updateRiskAndUI();
+};
+document.getElementById("closeModalBtn").onclick = () => modal.classList.remove("open");
+document.getElementById("cancelModalBtn").onclick = () => modal.classList.remove("open");
+document.getElementById("retryFeedBtn").onclick = () => startLiveFeed();
+document.getElementById("riskPctSelect").onchange = e => { const a = getActiveAccount(); if (a) { a.riskPct = parseFloat(e.target.value); saveState(); updateRiskAndUI(); } };
+document.getElementById("maxDailyTradesSelect").onchange = e => { const a = getActiveAccount(); if (a) { a.maxDailyTrades = Number(e.target.value); a.lockOverridden = false; saveState(); updateRiskAndUI(); } };
+document.getElementById("overrideLockBtn").onclick = () => { const a = getActiveAccount(); if (a) { a.lockOverridden = true; updateRiskAndUI(); } };
+document.getElementById("levSlider").oninput = e => { const a = getActiveAccount(); if (a) { a.leverage = Number(e.target.value); syncControlsToAccount(); saveState(); updateRiskAndUI(); } };
+document.getElementById("symbolSelect").onchange = e => { state.symbol = e.target.value; state.setupSide = "AUTO"; syncControlsToAccount(); startLiveFeed(); };
+document.getElementById("tfSelect").onchange = e => { state.tf = e.target.value; startLiveFeed(); };
+document.getElementById("forceLongBtn").onclick = () => { state.setupSide = "LONG"; renderAll(); };
+document.getElementById("forceShortBtn").onclick = () => { state.setupSide = "SHORT"; renderAll(); };
+document.querySelectorAll(".layer-pill").forEach(b => b.onclick = () => { const l = b.dataset.layer; state.layers[l] = !state.layers[l]; b.classList.toggle("on", state.layers[l]); drawCharts(); });
+document.getElementById("buyBtn").onclick = () => openLiveTrackedOrder("LONG");
+document.getElementById("sellBtn").onclick = () => openLiveTrackedOrder("SHORT");
+document.getElementById("addManualBtn").onclick = () => {
+  const acc = getActiveAccount(), val = parseFloat(document.getElementById("manualPnlInput").value);
+  if (!acc || isNaN(val)) return;
+  const now = new Date();
+  acc.trades.push({ date: getTodayStr(), symbol: state.symbol, side: document.getElementById("manualSide").value, note: `Manual (${acc.leverage}x)`, pnl: val, time: `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}` });
+  document.getElementById("manualPnlInput").value = ""; saveState(); updateRiskAndUI();
+};
+document.getElementById("resetChallengeBtn").onclick = () => { const a = getActiveAccount(); if (a) { a.trades = []; a.openPositions = []; a.lockOverridden = false; saveState(); updateRiskAndUI(); } };
+document.getElementById("exportCsvBtn").onclick = () => {
+  const acc = getActiveAccount(); if (!acc || !acc.trades.length) return;
+  const rows = [["Cuenta", "Fecha", "Hora", "Par", "Direccion", "Detalle", "PnL_USD"]];
+  acc.trades.forEach(t => rows.push([`"${acc.name}"`, t.date || getTodayStr(), t.time, t.symbol, t.side, `"${t.note}"`, t.pnl.toFixed(2)]));
+  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([rows.map(r => r.join(",")).join("\n")], { type: "text/csv" }));
+  a.download = `FutureTP_${acc.name.replace(/\s+/g, "_")}.csv`; a.click();
+};
+document.getElementById("backupJsonBtn").onclick = () => {
+  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify({ activeAccountId: state.activeAccountId, accounts: state.accounts })], { type: "application/json" }));
+  a.download = `FutureTP_Respaldo_${getTodayStr()}.json`; a.click();
+};
+document.getElementById("restoreJsonBtn").onclick = () => document.getElementById("restoreFileInput").click();
+document.getElementById("restoreFileInput").onchange = e => {
+  const f = e.target.files[0]; if (!f) return;
+  const r = new FileReader(); r.onload = ev => {
+    try { const p = JSON.parse(ev.target.result); if (Array.isArray(p.accounts) && p.accounts.length) { state.accounts = p.accounts; state.activeAccountId = p.activeAccountId || p.accounts[0].id; saveState(); syncControlsToAccount(); updateRiskAndUI(); } } catch (err) {}
+  }; r.readAsText(f);
+};
+document.getElementById("downloadBtn").onclick = () => {
+  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob(["<!DOCTYPE html>\n" + document.documentElement.outerHTML], { type: "text/html" }));
+  a.download = "FutureTP_v5_2.html"; a.click();
+};
+document.querySelectorAll(".nav-btn").forEach(btn => btn.onclick = () => {
+  document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active")); btn.classList.add("active");
+  const target = btn.dataset.tab;
+  document.querySelectorAll(".tab-section").forEach(sec => sec.classList.toggle("active-tab", sec.id === target));
+  if (target === "tab-chart") drawCharts();
+});
+
+window.addEventListener("resize", drawCharts);
+loadSaved();
+syncControlsToAccount();
+updateRiskAndUI();
+startLiveFeed();
+</script>
+</body>
+</html>
