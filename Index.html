@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>FutureTP Copilot v5.1 Multi-Cuenta</title>
+  <style>
+    :root {
+      --bg-main: #090d14;
+      --bg-card: #101622;
+      --bg-elevated: #161f30;
+      --border: #1f2b40;
+      --text-main: #e6edf7;
+      --text-muted: #8494ad;
+      --green: #10b981;
+      --green-bg: rgba(16, 185, 129, 0.14);
+      --red: #ef4444;
+      --red-bg: rgba(239, 68, 68, 0.14);
+      --amber: #f59e0b;
+      --amber-bg: rgba(245, 158, 11, 0.14);
+      --blue: #3b82f6;
+      --blue-bg: rgba(59, 130, 246, 0.14);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background: var(--bg-main); color: var(--text-main); padding-bottom: 74px; }
+    header {
+      background: var(--bg-card); border-bottom: 1px solid var(--border);
+      padding: 10px 14px; display: flex; flex-wrap: wrap; gap: 8px;
+      align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 20;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .logo {
+      width: 34px; height: 34px; border-radius: 9px; background: var(--green-bg);
+      border: 1px solid var(--green); display: flex; align-items: center; justify-content: center;
+      color: var(--green); font-weight: 800; font-size: 13px;
+    }
+    .brand h1 { font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .badge { font-size: 11px; padding: 2px 7px; border-radius: 6px; background: var(--green-bg); color: var(--green); border: 1px solid rgba(16,185,129,0.3); }
+    .badge.short { background: var(--red-bg); color: var(--red); border-color: rgba(239,68,68,0.3); }
+    .badge.warn { background: var(--amber-bg); color: var(--amber); border-color: rgba(245,158,11,0.3); }
+    .badge.blue { background: var(--blue-bg); color: #60a5fa; border-color: rgba(59,130,246,0.35); }
+    .sub-status { font-size: 11px; color: var(--text-muted); display: flex; align-items: center; gap: 6px; margin-top: 2px; flex-wrap: wrap; }
+    .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); display: inline-block; }
+    .dot.warn { background: var(--amber); }
+    .controls-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+    select, input, button {
+      background: var(--bg-elevated); color: var(--text-main); border: 1px solid var(--border);
+      border-radius: 8px; padding: 7px 10px; font-size: 12px; font-weight: 600;
+    }
+    button { cursor: pointer; }
+    button:disabled { opacity: 0.45; cursor: not-allowed; }
+    button.active { background: var(--green-bg); border-color: var(--green); color: var(--green); }
+    button.primary { background: var(--green); color: #051b11; border: none; }
+    button.danger { background: var(--red-bg); border-color: var(--red); color: var(--red); }
+    button.secondary { background: var(--blue-bg); border-color: var(--blue); color: #60a5fa; }
+    .account-bar {
+      background: #0c121d; border-bottom: 1px solid var(--border); padding: 8px 14px;
+      display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between;
+    }
+    .account-pills { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+    .acc-pill {
+      padding: 6px 10px; border-radius: 8px; font-size: 12px; background: var(--bg-elevated);
+      border: 1px solid var(--border); color: var(--text-muted); display: flex; align-items: center; gap: 6px;
+    }
+    .acc-pill.selected {
+      background: var(--blue-bg); border-color: var(--blue); color: var(--text-main);
+    }
+    .container { max-width: 1320px; margin: 0 auto; padding: 12px; display: grid; grid-template-columns: 1fr 390px; gap: 12px; }
+    @media (max-width: 900px) {
+      .container { grid-template-columns: 1fr; }
+      .tab-section { display: none; }
+      .tab-section.active-tab { display: block; }
+    }
+    .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 12px; margin-bottom: 12px; }
+    .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; gap: 8px; flex-wrap: wrap; }
+    .card-title { font-size: 12px; font-weight: 700; letter-spacing: 0.4px; color: var(--text-muted); text-transform: uppercase; }
+    .price-hero { display: flex; align-items: baseline; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
+    .price-big { font-size: 24px; font-weight: 800; font-variant-numeric: tabular-nums; }
+    .price-change { font-size: 12px; font-weight: 700; padding: 2px 7px; border-radius: 6px; }
+    canvas { width: 100%; display: block; background: #070b11; border-radius: 8px; border: 1px solid var(--border); }
+    #chartCanvas { height: 315px; }
+    .layers { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+    .layer-pill { font-size: 11px; padding: 5px 8px; border-radius: 6px; background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-muted); }
+    .layer-pill.on { border-color: var(--blue); color: var(--text-main); background: var(--blue-bg); }
+    .check-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; border-radius: 8px; background: var(--bg-elevated); margin-bottom: 6px; font-size: 12px; gap: 8px; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-bottom: 8px; }
+    .stat-box { background: var(--bg-elevated); padding: 9px; border-radius: 8px; border: 1px solid var(--border); }
+    .stat-label { font-size: 11px; color: var(--text-muted); }
+    .stat-val { font-size: 14px; font-weight: 700; margin-top: 2px; font-variant-numeric: tabular-nums; }
+    .setup-card {
+      background: linear-gradient(180deg, rgba(22,31,48,0.95) 0%, rgba(16,22,34,1) 100%);
+      border: 1px solid var(--blue);
+    }
+    .copy-mini { font-size: 10px; padding: 2px 6px; margin-top: 4px; width: 100%; background: var(--bg-card); color: var(--text-muted); }
+    .lev-box { background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 9px; padding: 10px; margin-bottom: 10px; }
+    .lev-top { display: flex; justify-content: space-between; align-items: center; font-size: 12px; margin-bottom: 6px; }
+    input[type="range"] { width: 100%; padding: 0; accent-color: var(--green); }
+    .progress-wrap { margin-bottom: 10px; }
+    .progress-top { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 4px; }
+    .bar { height: 7px; background: var(--bg-elevated); border-radius: 99px; overflow: hidden; }
+    .bar-fill { height: 100%; background: var(--green); transition: width 0.25s; }
+    .bar-fill.red { background: var(--red); }
+    .open-pos-card {
+      background: var(--blue-bg); border: 1px solid var(--blue); border-radius: 9px;
+      padding: 9px 10px; margin-bottom: 8px;
+    }
+    .journal-item {
+      background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 9px;
+      padding: 9px 10px; margin-bottom: 7px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; gap: 8px;
+    }
+    .del-trade-btn { background: transparent; border: none; color: var(--text-muted); font-size: 13px; padding: 2px 5px; }
+    .del-trade-btn:hover { color: var(--red); }
+    .manual-row { display: grid; grid-template-columns: 1fr 1fr auto; gap: 6px; margin-top: 8px; }
+    .lock-banner {
+      display: none; background: var(--red-bg); border: 1px solid var(--red); color: var(--text-main);
+      border-radius: 9px; padding: 9px 10px; margin-bottom: 10px; font-size: 12px;
+    }
+    .modal-backdrop {
+      display: none; position: fixed; inset: 0; background: rgba(4, 7, 13, 0.8); z-index: 50;
+      align-items: center; justify-content: center; padding: 16px;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal-box {
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px;
+      width: 100%; max-width: 420px; padding: 16px;
+    }
+    .form-group { margin-bottom: 10px; }
+    .form-group label { display: block; font-size: 11px; color: var(--text-muted); margin-bottom: 4px; }
+    .form-group input, .form-group select { width: 100%; }
+    .bottom-nav {
+      display: none; position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg-card);
+      border-top: 1px solid var(--border); z-index: 30; padding: 6px;
+    }
+    @media (max-width: 900px) { .bottom-nav { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; } }
+    .nav-btn { background: transparent; border: none; color: var(--text-muted); padding: 9px; font-size: 12px; border-radius: 8px; }
+    .nav-btn.active { background: var(--green-bg); color: var(--green); }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <div class="logo">FTP</div>
+      <div>
+        <h1>FutureTP Copilot <span class="badge blue">v5.1 Multi-Cuenta</span> <span class="badge" id="killzoneBadge">Sesión</span></h1>
+        <div class="sub-status">
+          <span class="dot" id="connDot"></span>
+          <span id="connText">Conectando mercado real...</span>
+          <button id="retryFeedBtn" style="padding:2px 6px;font-size:10px;">Reconectar</button>
+        </div>
+      </div>
+    </div>
+    <div class="controls-row">
+      <select id="symbolSelect">
+        <option value="BTCUSDT">BTCUSDT</option>
+        <option value="ONDOUSDT">ONDOUSDT</option>
+        <option value="SOLUSDT">SOLUSDT</option>
+      </select>
+      <select id="tfSelect">
+        <option value="1m">1m</option>
+        <option value="3m">3m</option>
+        <option value="15m" selected>15m</option>
+        <option value="1h">1h</option>
+      </select>
+      <button id="downloadBtn" class="primary">Descargar HTML</button>
+    </div>
+  </header>
+
+  <!-- BARRA DE GESTIÓN MULTI-CUENTA -->
+  <div class="account-bar">
+    <div class="account-pills" id="accountTabsContainer"></div>
+    <div style="display:flex;gap:6px;align-items:center;">
+      <button id="openNewAccModalBtn" class="secondary" style="padding:5px 9px;font-size:11px;">+ Nueva Cuenta</button>
+      <button id="editAccModalBtn" style="padding:5px 9px;font-size:11px;">Ajustar Cuenta</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- COLUMNA IZQUIERDA -->
+    <div id="tab-chart" class="tab-section active-tab">
+      <div class="card">
+        <div class="price-hero">
+          <span class="price-big" id="livePrice">--</span>
+          <span class="price-change" id="priceDelta">0.00%</span>
+          <span style="font-size:11px;color:var(--text-muted);" id="pdLevelsText">PDH: -- | PDL: --</span>
+        </div>
+        <canvas id="chartCanvas"></canvas>
+        <div class="layers">
+          <button class="layer-pill on" data-layer="pd">PDH / PDL</button>
+          <button class="layer-pill on" data-layer="liq">BSL / SSL</button>
+          <button class="layer-pill on" data-layer="ob">Order Blocks</button>
+          <button class="layer-pill on" data-layer="fvg">FVG</button>
+          <button class="layer-pill on" data-layer="setup">Setup (Entry/SL/TP)</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Semáforo Institucional FutureTP</span>
+          <span class="badge" id="signalBadge">EN VIGILANCIA</span>
+        </div>
+        <div class="check-item"><span>1. Barrido de Liquidez (Sweep SSL / BSL)</span><strong id="chkSweep" style="color:var(--amber)">Analizando</strong></div>
+        <div class="check-item"><span>2. Estructura OB / FVG Activa</span><strong id="chkZone" style="color:var(--green)">Detectado</strong></div>
+        <div class="check-item"><span>3. Mercado y Horario Institucional</span><strong id="chkSession">--</strong></div>
+        <div class="check-item"><span>4. Regla Apalancamiento Kraken Prop</span><strong id="chkLevRule" style="color:var(--green)">OK (≤ 10x)</strong></div>
+      </div>
+
+      <div class="card setup-card">
+        <div class="card-header">
+          <div>
+            <span class="card-title" style="color:var(--text-main);">Posible Operación · <span id="setupAccNameLabel" style="color:#60a5fa;">Cuenta Activa</span></span>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:2px;" id="setupReason">Basado en liquidez cercana y Order Block activo</div>
+          </div>
+          <div style="display:flex;gap:4px;">
+            <button id="forceLongBtn" style="padding:4px 8px;font-size:11px;" class="active">LONG</button>
+            <button id="forceShortBtn" style="padding:4px 8px;font-size:11px;">SHORT</button>
+          </div>
+        </div>
+
+        <div class="grid-3">
+          <div class="stat-box">
+            <div class="stat-label">Entrada Limit</div>
+            <div class="stat-val" id="setupEntry" style="color:var(--blue)">--</div>
+            <button class="copy-mini" onclick="copyVal('setupEntry')">Copiar</button>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">SL Estructural</div>
+            <div class="stat-val" id="setupSl" style="color:var(--red)">--</div>
+            <button class="copy-mini" onclick="copyVal('setupSl')">Copiar</button>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">TP Objetivo (1:2.5)</div>
+            <div class="stat-val" id="setupTp" style="color:var(--green)">--</div>
+            <button class="copy-mini" onclick="copyVal('setupTp')">Copiar</button>
+          </div>
+        </div>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--text-muted);padding-top:4px;">
+          <span id="setupDistInfo">Distancia SL: -- | Lotaje: --</span>
+          <strong style="color:var(--green);" id="setupRrInfo">R:R 1:2.5</strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- COLUMNA DERECHA -->
+    <div>
+      <div id="tab-risk" class="tab-section">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title" id="calcCardTitle">Calculadora · $25K</span>
+            <select id="riskPctSelect" style="font-size:11px;padding:4px 8px;">
+              <option value="0.0025">Riesgo 0.25%</option>
+              <option value="0.005" selected>Riesgo 0.50%</option>
+              <option value="0.01">Riesgo 1.00%</option>
+            </select>
+          </div>
+
+          <div class="lev-box">
+            <div class="lev-top">
+              <span>Apalancamiento Kraken Prop</span>
+              <strong style="color:var(--green);font-size:14px;" id="levDisplay">10x <span style="font-size:11px;color:var(--text-muted);">(Máx 10x BTC)</span></strong>
+            </div>
+            <input type="range" id="levSlider" min="1" max="10" step="1" value="10" />
+            <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted);margin-top:4px;">
+              <span>1x Conservador</span>
+              <span>5x Altcoins Máx</span>
+              <span>10x BTC Máx</span>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div class="stat-box"><div class="stat-label" id="riskLabel">Lotaje ($125 riesgo)</div><div class="stat-val" id="posSize">--</div></div>
+            <div class="stat-box"><div class="stat-label">Margen Necesario</div><div class="stat-val" id="marginReq" style="color:var(--blue)">--</div></div>
+            <div class="stat-box"><div class="stat-label">Valor Nominal</div><div class="stat-val" id="notionalVal">--</div></div>
+            <div class="stat-box"><div class="stat-label">SL Estructural</div><div class="stat-val" id="slVal" style="color:var(--red)">--</div></div>
+          </div>
+
+          <div class="lev-box" style="margin-bottom:10px;">
+            <div class="lev-top">
+              <span>Escudo Anti-Overtrading (Cuenta)</span>
+              <strong id="dailyTradesCounter" style="color:var(--green);">0 / 3 trades</strong>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--text-muted);">
+              <span>Máx. trades/día en esta cuenta:</span>
+              <select id="maxDailyTradesSelect" style="padding:3px 7px;font-size:11px;">
+                <option value="2">2 trades</option>
+                <option value="3" selected>3 trades</option>
+                <option value="5">5 trades</option>
+                <option value="99">Sin límite</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="overtradingLockBanner" class="lock-banner">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:6px;">
+              <div>
+                <strong style="color:var(--red);">BLOQUEO ANTI-OVERTRADING ACTIVO</strong>
+                <div id="lockReasonText" style="font-size:11px;color:var(--text-muted);margin-top:2px;">Límite diario alcanzado en esta cuenta.</div>
+              </div>
+              <button id="overrideLockBtn" style="padding:4px 8px;font-size:11px;">Desbloquear</button>
+            </div>
+          </div>
+
+          <div id="openPositionsContainer"></div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+            <button id="buyBtn" class="primary">Abrir LONG en <span class="btnSymLabel">BTC</span></button>
+            <button id="sellBtn" class="danger">Abrir SHORT en <span class="btnSymLabel">BTC</span></button>
+          </div>
+        </div>
+      </div>
+
+      <div id="tab-journal" class="tab-section">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title" id="journalHeaderTitle">Estado Desafío</span>
+            <div style="display:flex;gap:4px;flex-wrap:wrap;">
+              <button id="exportCsvBtn" class="secondary" style="padding:5px 7px;font-size:11px;">CSV Cuenta</button>
+              <button id="backupJsonBtn" class="secondary" style="padding:5px 7px;font-size:11px;">Respaldo Todo</button>
+              <button id="restoreJsonBtn" style="padding:5px 7px;font-size:11px;">Cargar</button>
+              <input type="file" id="restoreFileInput" accept=".json" style="display:none;" />
+              <button id="resetChallengeBtn" class="danger" style="padding:5px 7px;font-size:11px;">Limpiar</button>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div class="stat-box"><div class="stat-label">Balance Actual Cuenta</div><div class="stat-val" id="currentBalanceVal">$25,000.00</div></div>
+            <div class="stat-box"><div class="stat-label">PnL Neto / Acierto</div><div class="stat-val" id="totalPnl">$0.00 (0%)</div></div>
+          </div>
+
+          <div class="progress-wrap">
+            <div class="progress-top"><span id="targetLabel">Objetivo (+8.0%)</span><span id="targetPct">0.00% / 8.00%</span></div>
+            <div class="bar"><div class="bar-fill" id="targetBar" style="width:0%"></div></div>
+          </div>
+          <div class="progress-wrap">
+            <div class="progress-top"><span id="ddLabel">Drawdown Máximo (-6.0%)</span><span id="ddPct">0.00% / 6.00%</span></div>
+            <div class="bar"><div class="bar-fill red" id="ddBar" style="width:0%"></div></div>
+          </div>
+
+          <div style="border-top:1px solid var(--border);padding-top:8px;margin-top:8px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+              <span class="stat-label">Registrar cierre manual en esta cuenta:</span>
+              <span style="font-size:10px;color:var(--green);">Guardado por cuenta ✓</span>
+            </div>
+            <div class="manual-row">
+              <select id="manualSide">
+                <option value="LONG">LONG</op
