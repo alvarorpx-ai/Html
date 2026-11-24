@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>FutureTP Copilot v5.3 Multi-Cuenta</title>
+<title>FutureTP Copilot v5.4 Multi-Cuenta</title>
 <style>
-:root{--bg-main:#090d14;--bg-card:#101622;--bg-elevated:#161f30;--border:#1f2b40;--text-main:#e6edf7;--text-muted:#8494ad;--green:#10b981;--green-bg:rgba(16,185,129,0.14);--red:#ef4444;--red-bg:rgba(239,68,68,0.14);--amber:#f59e0b;--amber-bg:rgba(245,158,11,0.14);--blue:#3b82f6;--blue-bg:rgba(59,130,246,0.14);}
+:root{--bg-main:#090d14;--bg-card:#101622;--bg-elevated:#161f30;--border:#1f2b40;--text-main:#e6edf7;--text-muted:#8494ad;--green:#10b981;--green-bg:rgba(16,185,129,0.14);--red:#ef4444;--red-bg:rgba(239,68,68,0.14);--amber:#f59e0b;--amber-bg:rgba(245,158,11,0.14);--blue:#3b82f6;--blue-bg:rgba(59,130,246,0.14);--pink:#ec4899;}
 *{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;}
 body{background:var(--bg-main);color:var(--text-main);padding-bottom:74px;}
 header{background:var(--bg-card);border-bottom:1px solid var(--border);padding:10px 14px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:20;}
@@ -47,6 +47,7 @@ canvas:active{cursor:grabbing;}
 .layers{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
 .layer-pill{font-size:11px;padding:5px 8px;border-radius:6px;background:var(--bg-elevated);border:1px solid var(--border);color:var(--text-muted);}
 .layer-pill.on{border-color:var(--blue);color:var(--text-main);background:var(--blue-bg);}
+.layer-pill.pink.on{border-color:var(--pink);color:#f9a8d4;background:rgba(236,72,153,0.16);}
 .check-item{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border-radius:8px;background:var(--bg-elevated);margin-bottom:6px;font-size:12px;gap:8px;}
 .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
 .grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px;}
@@ -57,6 +58,9 @@ canvas:active{cursor:grabbing;}
 .copy-mini{font-size:10px;padding:2px 6px;margin-top:4px;width:100%;background:var(--bg-card);color:var(--text-muted);}
 .lev-box{background:var(--bg-elevated);border:1px solid var(--border);border-radius:9px;padding:10px;margin-bottom:10px;}
 .lev-top{display:flex;justify-content:space-between;align-items:center;font-size:12px;margin-bottom:6px;}
+.sl-editor-row{display:flex;gap:5px;align-items:center;margin-top:6px;}
+.sl-editor-row input{flex:1;min-width:0;font-variant-numeric:tabular-nums;border-color:rgba(236,72,153,0.45);}
+.sl-step-btn{padding:6px 9px;font-size:12px;background:var(--bg-card);}
 input[type="range"]{width:100%;padding:0;accent-color:var(--green);}
 .progress-wrap{margin-bottom:10px;}
 .progress-top{display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px;}
@@ -93,7 +97,7 @@ input[type="range"]{width:100%;padding:0;accent-color:var(--green);}
   <div class="brand">
     <div class="logo">FTP</div>
     <div>
-      <h1>FutureTP Copilot <span class="badge blue">v5.3 Multi</span> <span class="badge" id="killzoneBadge">Sesión</span></h1>
+      <h1>FutureTP Copilot <span class="badge blue">v5.4 Multi</span> <span class="badge" id="killzoneBadge">Sesión</span></h1>
       <div class="sub-status">
         <span class="dot" id="connDot"></span>
         <span id="connText">Iniciando...</span>
@@ -146,6 +150,7 @@ input[type="range"]{width:100%;padding:0;accent-color:var(--green);}
         <button class="layer-pill on" data-layer="pd">PDH / PDL</button>
         <button class="layer-pill on" data-layer="liq">BSL / SSL</button>
         <button class="layer-pill on" data-layer="setup">Setup (SL/TP)</button>
+        <button class="layer-pill pink on" data-layer="openSl">SL Abiertas</button>
       </div>
     </div>
 
@@ -194,6 +199,24 @@ input[type="range"]{width:100%;padding:0;accent-color:var(--green);}
             <option value="0.01">Riesgo 1.00%</option>
           </select>
         </div>
+
+        <div class="lev-box">
+          <div class="lev-top">
+            <span>Stop Loss de la Operación</span>
+            <span id="slModeBadge" class="badge blue" style="font-size:10px;">AUTO ESTRUCTURAL</span>
+          </div>
+          <div class="sl-editor-row">
+            <button id="slMinusBtn" class="sl-step-btn" title="Bajar SL">-</button>
+            <input type="number" id="customSlInput" step="any" placeholder="Precio SL" />
+            <button id="slPlusBtn" class="sl-step-btn" title="Subir SL">+</button>
+            <button id="slAutoBtn" class="secondary" style="padding:6px 8px;font-size:11px;">Auto</button>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted);margin-top:5px;">
+            <span id="slDistCalcInfo">Distancia: --</span>
+            <span>Ajusta el lotaje y se dibuja en gráfico</span>
+          </div>
+        </div>
+
         <div class="lev-box">
           <div class="lev-top">
             <span>Apalancamiento Kraken Prop</span>
@@ -208,7 +231,7 @@ input[type="range"]{width:100%;padding:0;accent-color:var(--green);}
           <div class="stat-box"><div class="stat-label" id="riskLabel">Lotaje ($125 riesgo)</div><div class="stat-val" id="posSize">--</div></div>
           <div class="stat-box"><div class="stat-label">Margen Necesario</div><div class="stat-val" id="marginReq" style="color:var(--blue)">--</div></div>
           <div class="stat-box"><div class="stat-label">Margen Libre Cuenta</div><div class="stat-val" id="freeMarginVal" style="color:var(--green)">--</div></div>
-          <div class="stat-box"><div class="stat-label">SL Estructural</div><div class="stat-val" id="slVal" style="color:var(--red)">--</div></div>
+          <div class="stat-box"><div class="stat-label">SL Activo Orden</div><div class="stat-val" id="slVal" style="color:#f472b6">--</div></div>
         </div>
         <div class="lev-box" style="margin-bottom:10px;">
           <div class="lev-top">
@@ -247,13 +270,25 @@ input[type="range"]{width:100%;padding:0;accent-color:var(--green);}
     </div>
 
     <div id="tab-journal" class="tab-section">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Resumen Global Multi-Cuenta</span>
+          <span class="badge blue" id="globalAccCountBadge">3 Cuentas</span>
+        </div>
+        <div class="grid-3" style="margin-bottom:0;">
+          <div class="stat-box"><div class="stat-label">Capital Total</div><div class="stat-val" id="globalCapVal">$100,000</div></div>
+          <div class="stat-box"><div class="stat-label">PnL Combinado</div><div class="stat-val" id="globalPnlVal">$0.00</div></div>
+          <div class="stat-box"><div class="stat-label">Acierto Global</div><div class="stat-val" id="globalWinVal">0%</div></div>
+        </div>
+      </div>
+
       <div class="card" id="journalCard">
         <div class="card-header">
           <span class="card-title" id="journalHeaderTitle">Estado Desafío</span>
           <div style="display:flex;gap:4px;flex-wrap:wrap;">
             <button id="exportCsvBtn" class="secondary" style="padding:5px 7px;font-size:11px;">CSV</button>
             <button id="backupJsonBtn" class="secondary" style="padding:5px 7px;font-size:11px;">Respaldo</button>
-            <button id="restoreJsonBtn" class="padding:5px 7px;font-size:11px;">Cargar</button>
+            <button id="restoreJsonBtn" style="padding:5px 7px;font-size:11px;">Cargar</button>
             <input type="file" id="restoreFileInput" accept=".json" style="display:none;" />
             <button id="resetChallengeBtn" class="danger" style="padding:5px 7px;font-size:11px;">Limpiar</button>
           </div>
@@ -338,15 +373,17 @@ input[type="range"]{width:100%;padding:0;accent-color:var(--green);}
 </div>
 
 <script>
-const STORAGE_KEY_V5 = "futuretp_multicuentas_v5_3";
-const LEGACY_KEYS = ["futuretp_multicuentas_v5_2", "futuretp_multicuentas_v5_1", "futuretp_multicuentas_v5_0"];
+const STORAGE_KEY_V5 = "futuretp_multicuentas_v5_4";
+const LEGACY_KEYS = ["futuretp_multicuentas_v5_3", "futuretp_multicuentas_v5_2", "futuretp_multicuentas_v5_1", "futuretp_multicuentas_v5_0"];
 let state = {
   symbol: "BTCUSDT", tf: "15m", candles: [],
   livePrices: { BTCUSDT: 0, ONDOUSDT: 0, SOLUSDT: 0 },
   pdh: null, pdl: null, pollTimer: null,
-  layers: { magnet: true, pd: true, liq: true, setup: true },
+  layers: { magnet: true, pd: true, liq: true, setup: true, openSl: true },
   view: { visibleCount: 75, panX: 0, panY: 0 },
-  setupSide: "AUTO", currentSetup: null, activeAccountId: null, accounts: []
+  setupSide: "AUTO", currentSetup: null,
+  customSlPrice: null,
+  activeAccountId: null, accounts: []
 };
 let editingAccountId = null;
 
@@ -442,7 +479,7 @@ function renderAccountTabs() {
     return `<button class="acc-pill ${sel ? "selected" : ""}" onclick="selectAccount('${acc.id}')"><strong>${acc.name}</strong><span style="color:${net >= 0 ? "var(--green)" : "var(--red)"};">${net >= 0 ? "+" : ""}$${net.toFixed(0)}</span>${openCnt > 0 ? `<span class="badge blue" style="padding:1px 5px;font-size:10px;">${openCnt} viva</span>` : ""}</button>`;
   }).join("");
 }
-function selectAccount(id) { state.activeAccountId = id; saveState(); syncControlsToAccount(); updateRiskAndUI(); }
+function selectAccount(id) { state.activeAccountId = id; saveState(); syncControlsToAccount(); renderAll(); }
 
 function updateKillzoneStatus() {
   const now = new Date(), day = now.getDay(), mins = now.getHours() * 60 + now.getMinutes();
@@ -469,6 +506,12 @@ function copyVal(id) {
 function fmtPrice(val, sym = state.symbol) {
   if (!val || isNaN(val)) return "--";
   return Number(val).toFixed(sym === "ONDOUSDT" ? 4 : 2);
+}
+function getEffectiveSl(lastPrice) {
+  if (state.customSlPrice && state.customSlPrice > 0 && Math.abs(state.customSlPrice - lastPrice) > lastPrice * 0.0001) {
+    return state.customSlPrice;
+  }
+  return state.currentSetup ? state.currentSetup.sl : lastPrice * 0.9975;
 }
 
 async function fetchJson(url) {
@@ -625,6 +668,9 @@ function drawCharts() {
 
   const setup = computeTradeSetup(fullData);
   const magnets = detectLiquidityMagnets(fullData);
+  const acc = getActiveAccount();
+  const symOpenPos = (acc && acc.openPositions) ? acc.openPositions.filter(p => p.symbol === state.symbol) : [];
+  const lastClose = fullData[fullData.length - 1].close;
 
   const visCount = Math.min(fullData.length, Math.max(15, state.view.visibleCount));
   const maxPanX = Math.max(0, fullData.length - visCount);
@@ -639,6 +685,15 @@ function drawCharts() {
   if (state.layers.setup && setup && state.view.panX === 0) {
     minP = Math.min(minP, setup.sl, setup.tp);
     maxP = Math.max(maxP, setup.sl, setup.tp);
+  }
+  if (state.layers.openSl) {
+    if (state.customSlPrice && state.customSlPrice > 0 && state.view.panX === 0) {
+      minP = Math.min(minP, state.customSlPrice);
+      maxP = Math.max(maxP, state.customSlPrice);
+    }
+    symOpenPos.forEach(p => {
+      if (p.sl) { minP = Math.min(minP, p.sl, p.entry); maxP = Math.max(maxP, p.sl, p.entry); }
+    });
   }
   const baseRange = (maxP - minP) || maxP * 0.003;
   const margin = baseRange * 0.12;
@@ -696,9 +751,43 @@ function drawCharts() {
   if (state.layers.setup && setup && state.view.panX === 0) {
     const sx = plotW * 0.55;
     ctx.setLineDash([3, 3]);
-    ctx.strokeStyle = "#ef4444"; ctx.beginPath(); ctx.moveTo(sx, yOf(setup.sl)); ctx.lineTo(plotW, yOf(setup.sl)); ctx.stroke(); ctx.fillStyle = "#ef4444"; ctx.fillText(`SL ${fmtPrice(setup.sl)}`, sx + 4, yOf(setup.sl) - 3);
-    ctx.strokeStyle = "#10b981"; ctx.beginPath(); ctx.moveTo(sx, yOf(setup.tp)); ctx.lineTo(plotW, yOf(setup.tp)); ctx.stroke(); ctx.fillStyle = "#10b981"; ctx.fillText(`TP ${fmtPrice(setup.tp)}`, sx + 4, yOf(setup.tp) - 3);
+    ctx.strokeStyle = "#ef4444"; ctx.beginPath(); ctx.moveTo(sx, yOf(setup.sl)); ctx.lineTo(plotW, yOf(setup.sl)); ctx.stroke(); ctx.fillStyle = "#ef4444"; ctx.fillText(`SL Setup ${fmtPrice(setup.sl)}`, sx + 4, yOf(setup.sl) - 3);
+    ctx.strokeStyle = "#10b981"; ctx.beginPath(); ctx.moveTo(sx, yOf(setup.tp)); ctx.lineTo(plotW, yOf(setup.tp)); ctx.stroke(); ctx.fillStyle = "#10b981"; ctx.fillText(`TP Setup ${fmtPrice(setup.tp)}`, sx + 4, yOf(setup.tp) - 3);
     ctx.setLineDash([]);
+  }
+
+  // Capa independiente: SL personalizado en calculadora + SL y Entrada de operaciones abiertas
+  if (state.layers.openSl) {
+    if (state.customSlPrice && state.customSlPrice > 0 && state.view.panX === 0) {
+      const cySl = yOf(state.customSlPrice);
+      if (cySl >= padT && cySl <= H - padB) {
+        ctx.setLineDash([5, 3]);
+        ctx.strokeStyle = "#ec4899"; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.moveTo(plotW * 0.35, cySl); ctx.lineTo(plotW, cySl); ctx.stroke();
+        ctx.fillStyle = "#f472b6";
+        ctx.fillText(`SL Calc ${fmtPrice(state.customSlPrice)}`, plotW * 0.35 + 4, cySl - 4);
+        ctx.setLineDash([]); ctx.lineWidth = 1;
+      }
+    }
+    symOpenPos.forEach((p, idx) => {
+      const ey = yOf(p.entry);
+      if (ey >= padT && ey <= H - padB) {
+        ctx.strokeStyle = "#3b82f6"; ctx.lineWidth = 1.2;
+        ctx.beginPath(); ctx.moveTo(0, ey); ctx.lineTo(plotW, ey); ctx.stroke();
+        ctx.fillStyle = "#60a5fa";
+        ctx.fillText(`ENTRADA #${idx + 1} (${p.side}) ${fmtPrice(p.entry)}`, 6, ey - 4);
+      }
+      if (p.sl) {
+        const sy = yOf(p.sl);
+        if (sy >= padT && sy <= H - padB) {
+          ctx.strokeStyle = "#ec4899"; ctx.lineWidth = 1.6;
+          ctx.beginPath(); ctx.moveTo(0, sy); ctx.lineTo(plotW, sy); ctx.stroke();
+          ctx.fillStyle = "#f472b6";
+          ctx.fillText(`SL ABIERTA #${idx + 1} ${fmtPrice(p.sl)}`, 6, sy + 11);
+        }
+      }
+      ctx.lineWidth = 1;
+    });
   }
 
   data.forEach((k, i) => {
@@ -708,10 +797,10 @@ function drawCharts() {
     ctx.fillRect(x - stepX * 0.3, yOf(Math.max(k.open, k.close)), stepX * 0.6, Math.max(1.5, Math.abs(yOf(k.close) - yOf(k.open))));
   });
 
-  const lp = fullData[fullData.length - 1].close, cy = yOf(lp);
+  const cy = yOf(lastClose);
   if (cy >= padT && cy <= H - padB) {
     ctx.fillStyle = "#10b981"; ctx.fillRect(plotW + 2, cy - 8, padR - 4, 16);
-    ctx.fillStyle = "#04160e"; ctx.fillText(fmtPrice(lp), plotW + 5, cy + 3);
+    ctx.fillStyle = "#04160e"; ctx.fillText(fmtPrice(lastClose), plotW + 5, cy + 3);
   }
 
   if (setup) {
@@ -720,8 +809,8 @@ function drawCharts() {
   }
   const magEl = document.getElementById("chkMagnet");
   if (magnets.length) {
-    const nearest = magnets.reduce((prev, curr) => Math.abs(curr.price - lp) < Math.abs(prev.price - lp) ? curr : prev);
-    const dist = (((nearest.price - lp) / lp) * 100).toFixed(2);
+    const nearest = magnets.reduce((prev, curr) => Math.abs(curr.price - lastClose) < Math.abs(prev.price - lastClose) ? curr : prev);
+    const dist = (((nearest.price - lastClose) / lastClose) * 100).toFixed(2);
     magEl.textContent = `${nearest.type} $${fmtPrice(nearest.price)} (${dist > 0 ? "+" : ""}${dist}%)`;
     magEl.style.color = nearest.type === "BSL" ? "#fb923c" : "#2dd4bf";
   } else {
@@ -737,8 +826,16 @@ function renderOpenPositions() {
     const cur = state.livePrices[p.symbol] || p.entry;
     const pnl = (p.side === "LONG" ? cur - p.entry : p.entry - cur) * p.units;
     const dec = p.symbol === "BTCUSDT" ? 3 : 1;
-    return `<div class="open-pos-card"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;"><strong>${p.side} ${p.units.toFixed(dec)} ${p.symbol.replace("USDT", "")} (${p.lev}x)</strong><strong style="color:${pnl >= 0 ? "var(--green)" : "var(--red)"};">${pnl >= 0 ? "+" : ""}$${pnl.toFixed(2)}</strong></div><div style="font-size:11px;color:var(--text-muted);margin-bottom:6px;">Entrada: $${fmtPrice(p.entry, p.symbol)} · Actual: $${fmtPrice(cur, p.symbol)}</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;"><button onclick="alert('SL movido a Break Even')" style="padding:5px;font-size:11px;">SL a BE</button><button onclick="closeOpenPosition(${idx})" class="danger" style="padding:5px;font-size:11px;">Cerrar</button></div></div>`;
+    const slText = p.sl ? `$${fmtPrice(p.sl, p.symbol)}` : "Sin SL";
+    return `<div class="open-pos-card"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;"><strong>${p.side} ${p.units.toFixed(dec)} ${p.symbol.replace("USDT", "")} (${p.lev}x)</strong><strong style="color:${pnl >= 0 ? "var(--green)" : "var(--red)"};">${pnl >= 0 ? "+" : ""}$${pnl.toFixed(2)}</strong></div><div style="font-size:11px;color:var(--text-muted);margin-bottom:6px;">Entrada: $${fmtPrice(p.entry, p.symbol)} · <span style="color:#f472b6;">SL: ${slText}</span> · Actual: $${fmtPrice(cur, p.symbol)}</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;"><button onclick="moveOpenSlToBe(${idx})" style="padding:5px;font-size:11px;">SL a BE</button><button onclick="closeOpenPosition(${idx})" class="danger" style="padding:5px;font-size:11px;">Cerrar</button></div></div>`;
   }).join("");
+}
+
+function moveOpenSlToBe(idx) {
+  const acc = getActiveAccount();
+  if (!acc || !acc.openPositions[idx]) return;
+  acc.openPositions[idx].sl = acc.openPositions[idx].entry;
+  saveState(); renderOpenPositions(); drawCharts();
 }
 
 function closeOpenPosition(idx) {
@@ -749,17 +846,34 @@ function closeOpenPosition(idx) {
   const now = new Date();
   acc.trades.push({ date: getTodayStr(), symbol: p.symbol, side: p.side, note: `${fmtPrice(p.entry, p.symbol)} → ${fmtPrice(exit, p.symbol)} (${p.lev}x)`, pnl, time: `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}` });
   acc.openPositions.splice(idx, 1);
-  saveState(); updateRiskAndUI(); triggerCloseFeedback(pnl);
+  saveState(); renderAll(); triggerCloseFeedback(pnl);
 }
 function deleteTrade(idxEnd) {
   const acc = getActiveAccount();
   if (!acc) return;
   acc.trades.splice(acc.trades.length - 1 - idxEnd, 1);
-  saveState(); updateRiskAndUI();
+  saveState(); renderAll();
+}
+
+function renderGlobalSummary() {
+  let totalCap = 0, totalNet = 0, totalTrades = 0, totalWins = 0;
+  state.accounts.forEach(a => {
+    totalCap += a.size;
+    a.trades.forEach(t => {
+      totalNet += t.pnl; totalTrades++;
+      if (t.pnl > 0) totalWins++;
+    });
+  });
+  document.getElementById("globalAccCountBadge").textContent = `${state.accounts.length} Cuentas`;
+  document.getElementById("globalCapVal").textContent = `$${totalCap.toLocaleString("en-US")}`;
+  const pnlEl = document.getElementById("globalPnlVal");
+  pnlEl.textContent = `${totalNet >= 0 ? "+" : ""}$${totalNet.toFixed(2)}`;
+  pnlEl.style.color = totalNet >= 0 ? "var(--green)" : "var(--red)";
+  document.getElementById("globalWinVal").textContent = `${totalTrades ? ((totalWins / totalTrades) * 100).toFixed(0) : 0}% (${totalTrades})`;
 }
 
 function updateRiskAndUI() {
-  updateKillzoneStatus(); renderAccountTabs();
+  updateKillzoneStatus(); renderAccountTabs(); renderGlobalSummary();
   const acc = getActiveAccount();
   if (!acc) return;
   document.getElementById("setupAccNameLabel").textContent = `${acc.name} ($${(acc.size / 1000).toFixed(0)}K)`;
@@ -785,7 +899,24 @@ function updateRiskAndUI() {
     de.style.background = pct >= 0 ? "var(--green-bg)" : "var(--red-bg)";
     de.style.color = pct >= 0 ? "var(--green)" : "var(--red)";
 
-    const s = state.currentSetup, slDist = s ? Math.abs(s.entry - s.sl) : last * 0.0025;
+    const s = state.currentSetup;
+    const activeSl = getEffectiveSl(last);
+    const slInput = document.getElementById("customSlInput");
+    if (document.activeElement !== slInput) {
+      slInput.value = fmtPrice(activeSl);
+    }
+    const modeBadge = document.getElementById("slModeBadge");
+    if (state.customSlPrice && state.customSlPrice > 0) {
+      modeBadge.textContent = "SL MANUAL ACTIVO";
+      modeBadge.className = "badge short";
+    } else {
+      modeBadge.textContent = "AUTO ESTRUCTURAL";
+      modeBadge.className = "badge blue";
+    }
+
+    const slDist = Math.max(last * 0.0002, Math.abs(last - activeSl));
+    document.getElementById("slDistCalcInfo").textContent = `Distancia: $${fmtPrice(slDist)} (${((slDist / last) * 100).toFixed(2)}%)`;
+
     const riskUsd = acc.size * acc.riskPct;
     document.getElementById("riskLabel").textContent = `Lotaje ($${riskUsd.toFixed(0)} riesgo)`;
     const maxCapNotional = Math.min(acc.size * acc.leverage * 0.95, freeMargin * acc.leverage * 0.98);
@@ -795,13 +926,14 @@ function updateRiskAndUI() {
 
     document.getElementById("posSize").textContent = `${units.toFixed(dec)} ${asset}`;
     document.getElementById("marginReq").textContent = `$${marginNeeded.toFixed(2)} (${acc.leverage}x)`;
-    document.getElementById("slVal").textContent = s ? `$${fmtPrice(s.sl)}` : `$${fmtPrice(last - slDist)}`;
+    document.getElementById("slVal").textContent = `$${fmtPrice(activeSl)}`;
     if (s) {
+      const setupDist = Math.abs(s.entry - s.sl);
       document.getElementById("setupReason").textContent = s.reason;
       document.getElementById("setupEntry").textContent = `$${fmtPrice(s.entry)}`;
       document.getElementById("setupSl").textContent = `$${fmtPrice(s.sl)}`;
       document.getElementById("setupTp").textContent = `$${fmtPrice(s.tp)}`;
-      document.getElementById("setupDistInfo").textContent = `SL: ${((slDist / s.entry) * 100).toFixed(2)}% | Lotaje: ${units.toFixed(dec)} ${asset}`;
+      document.getElementById("setupDistInfo").textContent = `SL: ${((setupDist / s.entry) * 100).toFixed(2)}% | Lotaje: ${units.toFixed(dec)} ${asset}`;
       document.getElementById("forceLongBtn").classList.toggle("active", s.side === "LONG");
       document.getElementById("forceShortBtn").classList.toggle("active", s.side === "SHORT");
     }
@@ -849,16 +981,43 @@ function openLiveTrackedOrder(side) {
   const freeMargin = Math.max(0, (acc.size + totalPnl) - getUsedMargin(acc));
   if (freeMargin < 50) return;
 
-  const entry = state.candles[state.candles.length - 1].close, s = state.currentSetup;
-  const slDist = s ? Math.abs(s.entry - s.sl) : entry * 0.0025;
+  const entry = state.candles[state.candles.length - 1].close;
+  let slPrice = getEffectiveSl(entry);
+  // Si el usuario abre en dirección contraria al SL por defecto, ajusta coherentemente si no puso SL manual
+  if (!state.customSlPrice) {
+    const dist = Math.abs(entry - slPrice);
+    slPrice = side === "LONG" ? entry - dist : entry + dist;
+  }
+  const slDist = Math.max(entry * 0.0002, Math.abs(entry - slPrice));
   const maxCapNotional = Math.min(acc.size * acc.leverage * 0.95, freeMargin * acc.leverage * 0.98);
   const finalNotional = Math.min((acc.size * acc.riskPct / slDist) * entry, maxCapNotional);
   if (finalNotional <= 0) return;
 
   if (!acc.openPositions) acc.openPositions = [];
-  acc.openPositions.push({ id: uid(), side, entry, units: finalNotional / entry, lev: acc.leverage, symbol: state.symbol });
-  saveState(); updateRiskAndUI();
+  acc.openPositions.push({ id: uid(), side, entry, sl: slPrice, units: finalNotional / entry, lev: acc.leverage, symbol: state.symbol });
+  saveState(); renderAll();
 }
+
+// Controles de ajuste de SL en la calculadora
+document.getElementById("customSlInput").oninput = e => {
+  const v = parseFloat(e.target.value);
+  state.customSlPrice = (!isNaN(v) && v > 0) ? v : null;
+  renderAll();
+};
+document.getElementById("slAutoBtn").onclick = () => {
+  state.customSlPrice = null;
+  renderAll();
+};
+function stepCustomSl(dir) {
+  if (!state.candles.length) return;
+  const last = state.candles[state.candles.length - 1].close;
+  const current = getEffectiveSl(last);
+  const tick = state.symbol === "BTCUSDT" ? 10 : (state.symbol === "SOLUSDT" ? 0.10 : 0.0005);
+  state.customSlPrice = Number((current + dir * tick).toFixed(state.symbol === "ONDOUSDT" ? 4 : 2));
+  renderAll();
+}
+document.getElementById("slMinusBtn").onclick = () => stepCustomSl(-1);
+document.getElementById("slPlusBtn").onclick = () => stepCustomSl(1);
 
 // Controles interactivos de Zoom y Arrastre en el Canvas
 const canvasEl = document.getElementById("chartCanvas");
@@ -928,12 +1087,12 @@ document.getElementById("saveAccountBtn").onclick = () => {
     const n = { id: uid(), name, size, goalPct, maxDdPct, riskPct: maxDdPct <= 3 ? 0.0025 : 0.005, leverage: 10, maxDailyTrades: 3, lockOverridden: false, trades: [], openPositions: [] };
     state.accounts.push(n); state.activeAccountId = n.id;
   }
-  modal.classList.remove("open"); saveState(); syncControlsToAccount(); updateRiskAndUI();
+  modal.classList.remove("open"); saveState(); syncControlsToAccount(); renderAll();
 };
 document.getElementById("deleteAccountBtn").onclick = () => {
   if (!editingAccountId || state.accounts.length <= 1) return;
   state.accounts = state.accounts.filter(a => a.id !== editingAccountId); state.activeAccountId = state.accounts[0].id;
-  modal.classList.remove("open"); saveState(); syncControlsToAccount(); updateRiskAndUI();
+  modal.classList.remove("open"); saveState(); syncControlsToAccount(); renderAll();
 };
 document.getElementById("closeModalBtn").onclick = () => modal.classList.remove("open");
 document.getElementById("cancelModalBtn").onclick = () => modal.classList.remove("open");
@@ -942,7 +1101,7 @@ document.getElementById("riskPctSelect").onchange = e => { const a = getActiveAc
 document.getElementById("maxDailyTradesSelect").onchange = e => { const a = getActiveAccount(); if (a) { a.maxDailyTrades = Number(e.target.value); a.lockOverridden = false; saveState(); updateRiskAndUI(); } };
 document.getElementById("overrideLockBtn").onclick = () => { const a = getActiveAccount(); if (a) { a.lockOverridden = true; updateRiskAndUI(); } };
 document.getElementById("levSlider").oninput = e => { const a = getActiveAccount(); if (a) { a.leverage = Number(e.target.value); syncControlsToAccount(); saveState(); updateRiskAndUI(); } };
-document.getElementById("symbolSelect").onchange = e => { state.symbol = e.target.value; state.setupSide = "AUTO"; syncControlsToAccount(); startLiveFeed(); };
+document.getElementById("symbolSelect").onchange = e => { state.symbol = e.target.value; state.setupSide = "AUTO"; state.customSlPrice = null; syncControlsToAccount(); startLiveFeed(); };
 document.getElementById("tfSelect").onchange = e => { state.tf = e.target.value; startLiveFeed(); };
 document.getElementById("forceLongBtn").onclick = () => { state.setupSide = "LONG"; renderAll(); };
 document.getElementById("forceShortBtn").onclick = () => { state.setupSide = "SHORT"; renderAll(); };
@@ -954,9 +1113,9 @@ document.getElementById("addManualBtn").onclick = () => {
   if (!acc || isNaN(val)) return;
   const now = new Date();
   acc.trades.push({ date: getTodayStr(), symbol: state.symbol, side: document.getElementById("manualSide").value, note: `Manual (${acc.leverage}x)`, pnl: val, time: `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}` });
-  document.getElementById("manualPnlInput").value = ""; saveState(); updateRiskAndUI(); triggerCloseFeedback(val);
+  document.getElementById("manualPnlInput").value = ""; saveState(); renderAll(); triggerCloseFeedback(val);
 };
-document.getElementById("resetChallengeBtn").onclick = () => { const a = getActiveAccount(); if (a) { a.trades = []; a.openPositions = []; a.lockOverridden = false; saveState(); updateRiskAndUI(); } };
+document.getElementById("resetChallengeBtn").onclick = () => { const a = getActiveAccount(); if (a) { a.trades = []; a.openPositions = []; a.lockOverridden = false; saveState(); renderAll(); } };
 document.getElementById("exportCsvBtn").onclick = () => {
   const acc = getActiveAccount(); if (!acc || !acc.trades.length) return;
   const rows = [["Cuenta", "Fecha", "Hora", "Par", "Direccion", "Detalle", "PnL_USD"]];
@@ -972,12 +1131,12 @@ document.getElementById("restoreJsonBtn").onclick = () => document.getElementByI
 document.getElementById("restoreFileInput").onchange = e => {
   const f = e.target.files[0]; if (!f) return;
   const r = new FileReader(); r.onload = ev => {
-    try { const p = JSON.parse(ev.target.result); if (Array.isArray(p.accounts) && p.accounts.length) { state.accounts = p.accounts; state.activeAccountId = p.activeAccountId || p.accounts[0].id; saveState(); syncControlsToAccount(); updateRiskAndUI(); } } catch (err) {}
+    try { const p = JSON.parse(ev.target.result); if (Array.isArray(p.accounts) && p.accounts.length) { state.accounts = p.accounts; state.activeAccountId = p.activeAccountId || p.accounts[0].id; saveState(); syncControlsToAccount(); renderAll(); } } catch (err) {}
   }; r.readAsText(f);
 };
 document.getElementById("downloadBtn").onclick = () => {
   const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob(["<!DOCTYPE html>\n" + document.documentElement.outerHTML], { type: "text/html" }));
-  a.download = "FutureTP_v5_3.html"; a.click();
+  a.download = "FutureTP_v5_4.html"; a.click();
 };
 document.querySelectorAll(".nav-btn").forEach(btn => btn.onclick = () => {
   document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active")); btn.classList.add("active");
@@ -989,7 +1148,7 @@ document.querySelectorAll(".nav-btn").forEach(btn => btn.onclick = () => {
 window.addEventListener("resize", drawCharts);
 loadSaved();
 syncControlsToAccount();
-updateRiskAndUI();
+renderAll();
 startLiveFeed();
 </script>
 </body>
